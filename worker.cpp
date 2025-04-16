@@ -11,9 +11,10 @@ void Worker::doWork(const QString &parameter, Enums::Type type) {
 
     m_decoder->process();
     const auto start = std::chrono::steady_clock::now();
-//    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
+    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
 
-    m_calibration->setNewEvents(m_decoder->events());
+//    m_calibration->setNewEvents(m_decoder->events());
+    m_calibration->setNewEvents(m_data);
     m_calibration->process();
 
     doDataDelegateWork(parameter, type);

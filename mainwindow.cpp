@@ -6,17 +6,13 @@
 #include "calibration.h"
 #include "datadelegate.h"
 
+#include <Q3DSurface>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    createActions();
-    fileMenu = ui->menubar->addMenu(tr("&File"));
-    fileMenu->addAction(openAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
 
 
     QWidget *widget = new QWidget;
@@ -28,9 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *bottomFiller = new QWidget;
     bottomFiller->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-
-    QString message = tr("A context menu is available by right-clicking");
-    statusBar()->showMessage(message);
 
 
     m_path = "/home/egor/build-adcmemulate-Desktop-Debug/adcm.dat";
@@ -220,26 +213,4 @@ void MainWindow::open()
 {
 
 }
-
-void MainWindow::createActions()
-{
-    openAct = new QAction(tr("&Open..."), this);
-    openAct->setShortcuts(QKeySequence::Open);
-    openAct->setStatusTip(tr("Open an existing file"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
-
-    exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcuts(QKeySequence::Quit);
-    exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
-}
-
-void MainWindow::createMenus()
-{
-     fileMenu = ui->menubar->addMenu(tr("&File"));
-     fileMenu->addAction(openAct);
-     fileMenu->addSeparator();
-     fileMenu->addAction(exitAct);
-}
-
 

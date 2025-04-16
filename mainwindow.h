@@ -43,19 +43,13 @@ private:
     QLabel *m_label;
     QTimer *m_fileWatcherTimer;
 
-    ChannelMap m_pre{ChannelMap::mapSTD()};
+    ChannelMap m_pre{ChannelMap::mapNAP()};
     QPushButton *m_pushButton;
     Controller *m_controller;
     QComboBox *m_comboBox;
     QGroupBox *m_groupBox;
     QRadioButton *m_rBtime;
     QRadioButton *m_rBamp;
-
-    void createMenus();
-    void createActions();
-    QMenu *fileMenu;
-    QAction *openAct;
-    QAction *exitAct;
 
 };
 #endif // MAINWINDOW_H

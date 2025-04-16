@@ -241,18 +241,19 @@ void Calibration::processTime()
 
     double(Calibration::*f)(const dec_ev_t &event);
     f = &Calibration::valueTime;
-    fillHistsAsync(hists, f);
+    clearHists(_hists);
+    fillHistsAsync(_hists, f);
 
-    double(Calibration::*fC)(const dec_ev_t &event);
-    fC = &Calibration::valueTimeCorrected;
+//    double(Calibration::*fC)(const dec_ev_t &event);
+//    fC = &Calibration::valueTimeCorrected;
 
-    for (ulong i{0}; i < _hists.size(); ++i)
-    {
-        for (ulong j{0}; j < _hists[i].size(); ++j)
-        {
-            _hists[i][j]->Add(hists[i][j]);
-        }
-    }
+//    for (ulong i{0}; i < _hists.size(); ++i)
+//    {
+//        for (ulong j{0}; j < _hists[i].size(); ++j)
+//        {
+//            _hists[i][j]->Add(hists[i][j]);
+//        }
+//    }
 //    const std::string psName{"time.ps"};
 //    drawHistsToFile(psName, hists);
 
