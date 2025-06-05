@@ -10,7 +10,6 @@ FileWatcher::FileWatcher(const QString &path, QObject *parent) : QObject(parent)
 void FileWatcher::operate()
 {
     auto lm{m_fileInfo->lastModified()};
-    qInfo() << lm.currentMSecsSinceEpoch();
     m_fileInfo->refresh();
     if (lm != m_fileInfo->lastModified())
     {
