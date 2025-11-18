@@ -102,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent)
     workerThread.start();
     m_fileWatcherTimer->start();
 
+
+
 }
 
 MainWindow::~MainWindow()
