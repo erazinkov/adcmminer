@@ -8,16 +8,10 @@ MainWidget::MainWidget(QWidget *parent)
     // Create chart view with the chart
     m_chart = new QChart;
     m_chartView = new QChartView(m_chart, this);
-
-    // Create layout for grid and detached legend
-//    m_mainLayout = new QGridLayout(this);
     QHBoxLayout *m_mainLayout = new QHBoxLayout(this);
     m_mainLayout->addWidget(m_chartView);
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
-    this->setStyleSheet("border: 1px solid red;");
-    this->setStyleSheet("background-color: green;");
-
     // Set the title and show legend
     m_chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
 //    m_chart->setTitle("Legendmarker example (click on legend)");
@@ -25,7 +19,10 @@ MainWidget::MainWidget(QWidget *parent)
 //    m_chart->legend()->setAlignment(Qt::AlignRight);
 
     m_chartView->setRenderHint(QPainter::Antialiasing);
+
+
 }
+
 
 void MainWidget::removeSeries()
 {

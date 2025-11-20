@@ -43,8 +43,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_widgetLeft = new QWidget(widget);
     m_widgetRight = new QWidget(widget);
-    m_widgetRight->setStyleSheet("border: 1px solid red;");
-    m_widgetRight->setStyleSheet("background-color: blue;");
 
     m_gLleft = new QGridLayout(m_widgetLeft);
 //    m_gLright = new QGridLayout(m_widgetRight);

@@ -44,8 +44,9 @@ private:
 //    QGridLayout *m_mainLayout;
 
 
-
     MousePressEater *m_mousePressEater;
+
+
 
 };
 
