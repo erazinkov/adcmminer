@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <fstream>
 #include <vector>
-
+#include <set>
 
 
 #define STOR_ID_CMAP  0x504D    /* 'MP' */
@@ -90,10 +90,25 @@ struct dec_ev_t
     dec_det_t g;    // gamma detector
 } __attribute__ ((packed));
 
+struct dec_ev_1_t
+{
+    uint32_t ts;    // timestamp, 10 ns step
+    float tdc;      // time
+    dec_det_t d;    // alpha-gamma detector
+} __attribute__ ((packed));
+
 struct dec_cnt_t
-{    
+{
     double time;        // time of count measurement in seconds
-    u_int32_t rawhits;  // raw hit counters
+    std::vector<u_int32_t> rawhits;  // raw hit counters
 };
+
+struct dec_ch_t
+{
+    std::set<u_int8_t> g;
+    std::set<u_int8_t> a;
+    std::set<u_int8_t> d;
+};
+
 
 #endif /* ADCM_DF_H */

@@ -16,94 +16,84 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     QWidget *widget = new QWidget;
+    m_mainLayout = new QHBoxLayout(widget);
     setCentralWidget(widget);
-
-    QWidget *topFiller = new QWidget;
-    topFiller->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-    QWidget *bottomFiller = new QWidget;
-    bottomFiller->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-
-
-    m_path = "/home/egor/build-adcmemulate-Desktop-Debug/adcm.dat";
+//    m_path = "/home/egor/shares/tmp/c12_2kg_mask_1";
+//    m_path = "/home/egor/shares/tmp/adcm.dat.test_0_180";
 //    m_path = "/misc/agpk_std/adcm.dat";
+    m_path = "/home/egor/build-adcmemulate-Desktop-Debug/adcm.dat";
     m_fileWatcher = new FileWatcher(m_path);
     m_fileWatcher->moveToThread(&workerThread);
-
     m_fileWatcherTimer = new QTimer(this);
     m_fileWatcherTimer->setInterval(1000);
 
-    m_controller = new Controller(m_path, m_pre);
+    m_controller = new Controller(m_path);
+
+
     m_pushButton = new QPushButton("Button", this);
+    m_pushButton->setCheckable(true);
+
+    m_pushButton1 = new QPushButton("Button1", this);
+
     m_comboBox = new QComboBox(this);
-    m_label = new QLabel("Gamma:", this);
+    m_comboBox->insertItems(0, {"4", "16", "32", "64"});
+    m_comboBox->setCurrentIndex(0);
 
-    m_groupBox = new QGroupBox(this);
-    QHBoxLayout *rBLayout = new QHBoxLayout;
-    m_rBtime = new QRadioButton("Time");
-    m_rBtime->setChecked(true);
-    m_rBamp = new QRadioButton("Amp");
-    rBLayout->addWidget(m_rBtime);
-    rBLayout->addWidget(m_rBamp);
+    m_label = new QLabel("Channels:", this);
 
-    m_groupBox->setLayout(rBLayout);
+    m_widgetLeft = new QWidget(widget);
+    m_widgetRight = new QWidget(widget);
+    m_widgetRight->setStyleSheet("border: 1px solid red;");
+    m_widgetRight->setStyleSheet("background-color: blue;");
 
-    for (uint i{0}; i < m_pre.numberOfChannelsGamma(); ++i)
-    {
-        m_comboBox->addItem(QString("%1").arg(i));
-    }
+    m_gLleft = new QGridLayout(m_widgetLeft);
+//    m_gLright = new QGridLayout(m_widgetRight);
 
-    QGridLayout *gLleft = new QGridLayout;
-    QGridLayout *gLright = new QGridLayout;
+    m_gLleft->addWidget(m_pushButton, 0, 0);
+    m_gLleft->addWidget(m_pushButton1, 0, 1);
+    m_gLleft->addWidget(m_label, 1, 0);
+    m_gLleft->addWidget(m_comboBox, 1, 1);
 
-    gLleft->addWidget(m_pushButton, 0, 0, 1, 2);
-    gLleft->addWidget(m_label, 1, 0);
-    gLleft->addWidget(m_comboBox, 1, 1);
-    gLleft->addWidget(m_groupBox, 2, 0, 1, 2);
-    gLleft->setAlignment(Qt::AlignTop);
-    gLright->setContentsMargins(0, 0, 0, 0);
-    gLright->setSpacing(0);
-    m_mainWidgetList.resize(static_cast<qsizetype>(m_pre.numberOfChannelsAlpha()));
-    for (qsizetype i{0}, j{0}; i < m_mainWidgetList.size(); ++i, ++j)
-    {
-        m_mainWidgetList[i] = new MainWidget(this);
-        gLright->addWidget(m_mainWidgetList[i], static_cast<int>((j - (i % 3)) / 3), static_cast<int>(i % 3));
-    }
+    m_mainLayout->addWidget(m_widgetLeft);
+    m_mainLayout->addWidget(m_widgetRight);
 
-    QHBoxLayout *mainLayout = new QHBoxLayout;
-    mainLayout->addLayout(gLleft);
-    mainLayout->addLayout(gLright);
+//    QVBoxLayout *layout = new QVBoxLayout;
+//    layout->setContentsMargins(5, 5, 5, 5);
+//    layout->addWidget(topFiller);
+//    layout->addLayout(m_mainLayout, 1);
+//    layout->addWidget(bottomFiller);
+//    widget->setLayout(m_mainLayout);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(5, 5, 5, 5);
-    layout->addWidget(topFiller);
-    layout->addLayout(mainLayout, 1);
-    layout->addWidget(bottomFiller);
-    widget->setLayout(layout);
-
-    connect(m_comboBox, &QComboBox::currentTextChanged, [this](const QString &str){
-        m_selected = str;
-        m_controller->operate1(m_selected, m_type);
-    });
+    connect(m_comboBox, &QComboBox::currentTextChanged, this, &MainWindow::onCurrentTextChanged);
     connect(m_controller, &Controller::handleResults, this, &MainWindow::newData);
     connect(&workerThread, &QThread::finished, m_fileWatcher, &QObject::deleteLater);
     connect(m_fileWatcherTimer, &QTimer::timeout, m_fileWatcher, &FileWatcher::operate);
 
     connect(m_fileWatcher, &FileWatcher::onFileChanged, [this](const QString &path){
         qInfo() << path;
-        m_controller->operate(m_selected, m_type);
+        m_controller->operateS();
     });
 
-    connect(m_rBtime, &QRadioButton::clicked, this, &MainWindow::onRadioClicked);
-    connect(m_rBamp, &QRadioButton::clicked, this, &MainWindow::onRadioClicked);
+
+    connect(m_pushButton, &QPushButton::toggled, [this](bool checked){
+        if (checked)
+        {
+            m_fileWatcherTimer->start();
+        }
+        else
+        {
+            m_fileWatcherTimer->stop();
+        }
+    });
+
+    connect(m_pushButton, &QPushButton::clicked, [this](){
+
+    });
 
 
     workerThread.start();
-    m_fileWatcherTimer->start();
 
-
-
+    onCurrentTextChanged(m_comboBox->currentText());
 }
 
 MainWindow::~MainWindow()
@@ -116,14 +106,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onFileChanged(const QString &pathAndTime)
-{
-
-}
-
 void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
 {
-
+    qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     m_data.clear();
     for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
     {
@@ -152,11 +137,18 @@ void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
         areaSeries->setName(i.key());
         m_series.append(areaSeries);
     }
-    for (auto i{0}; i < m_series.size(); ++i)
+
+    for (auto i{0}; i < std::min(m_series.size(), m_mainWidgetList.size()); ++i)
     {
         m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
         m_mainWidgetList.at(i)->process({m_series.at(i)});
     }
+
+//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
+//    {
+//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
+//        m_mainWidgetList.at(i)->process({m_series.at(i)});
+//    }
 }
 
 void MainWindow::newDataShow()
@@ -193,26 +185,50 @@ void MainWindow::newDataShow()
 //        series->setName(i.key());
 //        m_series.append(series);
 //    }
-    for (auto i{0}; i < m_series.size(); ++i)
+    for (auto i{0}; i < std::min(m_series.size(), m_mainWidgetList.size()); ++i)
     {
         m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
         m_mainWidgetList.at(i)->process({m_series.at(i)});
     }
 }
 
-void MainWindow::onClicked()
+void MainWindow::onCurrentTextChanged(const QString &currentText)
 {
+    if (m_widgetRight->layout())
+    {
+        delete m_widgetRight->layout();
+    }
+    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
+    {
+        m_mainWidgetList.at(i)->deleteLater();
+    }
 
-}
+    m_widgetRight->setLayout(new QGridLayout(m_widgetRight));
+    static_cast<QGridLayout*>(m_widgetRight->layout())->setSpacing(0);
+    static_cast<QGridLayout*>(m_widgetRight->layout())->setContentsMargins(0, 0, 0, 0);
 
-void MainWindow::onRadioClicked()
-{
-    m_type = m_rBtime->isChecked() ? Enums::Type::TIME : Enums::Type::AMP;
-    m_controller->operate1(m_selected, m_type);
-}
+    m_mainWidgetList.resize(static_cast<qsizetype>(currentText.toInt()));
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(static_cast<qsizetype>(currentText.toInt()))))};
+    auto index{0};
+    for (auto ir{0}; ir < cd; ++ir)
+    {
+        for (auto ic{0}; ic < cd; ++ic)
+        {
+            if (index < m_mainWidgetList.size())
+            {
+                m_mainWidgetList[index] = new MainWidget;
+                static_cast<QGridLayout*>(m_widgetRight->layout())->addWidget(m_mainWidgetList.at(index), ir, ic);
+                index++;
+            }
+        }
+    }
+    for (auto i{0}; i < cd; ++i)
+    {
+        static_cast<QGridLayout*>(m_widgetRight->layout())->setRowStretch(i, 1);
+        static_cast<QGridLayout*>(m_widgetRight->layout())->setColumnStretch(i, 1);
+    }
 
-void MainWindow::open()
-{
+
 
 }
 

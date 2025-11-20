@@ -41,8 +41,7 @@ private:
     QChart *m_chart;
 
     QChartView *m_chartView;
-    QGridLayout *m_mainLayout;
-    QGridLayout *m_fontLayout;
+//    QGridLayout *m_mainLayout;
 
 
 

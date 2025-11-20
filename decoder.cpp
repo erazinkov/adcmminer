@@ -3,19 +3,14 @@
 #include <iostream>
 #include <bits/stdc++.h>
 
-Decoder::Decoder(const std::string &fileName, const ChannelMap &pre)
-    : fileName_{fileName} , pre_{pre}
+Decoder::Decoder(const std::string &fileName)
+    : fileName_{fileName}
 {
 }
 
 std::vector<dec_ev_t> &Decoder::events()
 {
     return events_;
-}
-
-std::vector<dec_cnt_t> &Decoder::counters()
-{
-    return counters_;
 }
 
 void Decoder::process()
@@ -27,17 +22,13 @@ void Decoder::process()
         return;
     }
 
-    auto number{pre_.numberOfChannelsAlpha()};
-    counters_.resize(number);
-
     events_.clear();
+    events_1_.clear();
 
     stor_packet_hdr_t hdr;
     stor_ev_hdr_t ev;
     adcm_cmap_t cmap;
     adcm_counters_t counters;
-
-    auto c{false};
 
     while (ifs_)
     {
@@ -46,72 +37,73 @@ void Decoder::process()
         if (hdr.id == STOR_ID_CMAP && hdr.size > sizeof(stor_packet_hdr_t))
         {
             ifs_ >> cmap;
-            c = pre_.isCorrect(cmap.map);
             continue;
         }
         if (hdr.id == STOR_ID_EVNT && hdr.size > sizeof(stor_packet_hdr_t))
         {
-            if (!c)
-            {
-                hdr.size -= sizeof(stor_packet_hdr_t);
-                ifs_.ignore(hdr.size);
-                continue;
-            }
             ifs_ >> ev;
-            if (ev.np != 2)
+            switch (ev.np)
             {
-                hdr.size -= sizeof(stor_packet_hdr_t);
-                hdr.size -= sizeof(stor_ev_hdr_t);
-                ifs_.ignore(hdr.size);
-                continue;
+                case 1:
+                {
+                    dec_ev_1_t event;
+                    std::unique_ptr<stor_puls_t> d{new stor_puls_t()};
+                    ifs_ >> *d.get();
+                    event.d.index = d.get()->ch;
+                    event.d.amp = d.get()->a;
+                    event.tdc = d.get()->t;
+                    event.ts = ev.ts;
+                    events_1_.push_back(event);
+                    channels_.d.insert(d.get()->ch);
+                    break;
+                }
+                case 2:
+                {
+                    std::unique_ptr<stor_puls_t> g{new stor_puls_t()};
+                    std::unique_ptr<stor_puls_t> a{new stor_puls_t()};
+                    ifs_ >> *g.get() >> *a.get();
+                    dec_ev_t event;
+                    event.g.index = g.get()->ch;
+                    event.g.amp = g.get()->a;
+                    event.a.index = a.get()->ch;
+                    event.a.amp = g.get()->a;
+                    event.tdc = g.get()->t - a.get()->t;
+                    event.ts = ev.ts;
+                    events_.push_back(event);
+                    channels_.g.insert(g.get()->ch);
+                    channels_.a.insert(a.get()->ch);
+                    break;
+                }
+                default:
+                {
+                    hdr.size -= sizeof(stor_packet_hdr_t);
+                    hdr.size -= sizeof(stor_ev_hdr_t);
+                    ifs_.ignore(hdr.size);
+                    break;
+                }
             }
-            stor_puls_t *g = new stor_puls_t();
-            stor_puls_t *a = new stor_puls_t();
-            ifs_ >> *g >> *a;
-            if (g->ch < pre_.map().size() && a->ch < pre_.map().size())
-            {
-                dec_ev_t event;
-                auto numberGamma{pre_.numberByChannel(g->ch)};
-                auto numberAlpha{pre_.numberByChannel(a->ch)};
-                event.g.index = numberGamma;
-                event.g.amp = g->a;
-                event.a.index = numberAlpha;
-                event.a.amp = g->a;
-                event.tdc = g->t - a->t;
-                event.ts = ev.ts;
-                events_.push_back(event);
-            }
-            delete g;
-            delete a;
-
             continue;
         }
         if (hdr.id == STOR_ID_CNTR && hdr.size > sizeof(stor_packet_hdr_t))
         {
-            if (!c)
-            {
-                hdr.size -= sizeof(stor_packet_hdr_t);
-                ifs_.ignore(hdr.size);
-            }
             ifs_ >> counters;
-            for (size_t i{0}; i < pre_.map().size(); ++i)
+            if (!counters.n)
             {
-                auto number{pre_.numberByChannel(i)};
-                auto type{pre_.typeByChannel(i)};
-                switch (type)
-                {
-                    case ALPHA:
-                    {
-                        counters_[number].rawhits += counters.rawhits[i];
-                        counters_[number].time += counters.time;
-                        break;
-                    }
-                    default:
-                    {
-                        break;
-                    }
-                }
+                continue;
             }
+
+            if (counters_.rawhits.empty())
+            {
+                counters_.rawhits.resize(counters.n);
+            }
+
+            for (size_t i{0}; i < counters.n; ++i)
+            {
+                counters_.rawhits.at(i) += counters.rawhits.at(i);
+            }
+            counters_.time += counters.time;
+//            hdr.size -= sizeof(stor_packet_hdr_t);
+//            ifs_.ignore(hdr.size);
             continue;
         }
         ifs_.seekg(1 - static_cast<long long>(sizeof(stor_packet_hdr_t)), std::ios_base::cur);
@@ -128,9 +120,6 @@ std::vector<dec_ev_t> Decoder::processA()
         return {};
     }
 
-    auto number{pre_.numberOfChannelsAlpha()};
-    counters_.resize(number);
-
     std::vector<dec_ev_t> events;
 
     stor_packet_hdr_t hdr;
@@ -138,7 +127,6 @@ std::vector<dec_ev_t> Decoder::processA()
     adcm_cmap_t cmap;
     adcm_counters_t counters;
 
-    auto c{false};
 
     while (ifs_)
     {
@@ -147,17 +135,10 @@ std::vector<dec_ev_t> Decoder::processA()
         if (hdr.id == STOR_ID_CMAP && hdr.size > sizeof(stor_packet_hdr_t))
         {
             ifs_ >> cmap;
-            c = pre_.isCorrect(cmap.map);
             continue;
         }
         if (hdr.id == STOR_ID_EVNT && hdr.size > sizeof(stor_packet_hdr_t))
         {
-            if (!c)
-            {
-                hdr.size -= sizeof(stor_packet_hdr_t);
-                ifs_.ignore(hdr.size);
-                continue;
-            }
             ifs_ >> ev;
             if (ev.np != 2)
             {
@@ -166,53 +147,24 @@ std::vector<dec_ev_t> Decoder::processA()
                 ifs_.ignore(hdr.size);
                 continue;
             }
-            stor_puls_t *g = new stor_puls_t();
-            stor_puls_t *a = new stor_puls_t();
-            ifs_ >> *g >> *a;
-            if (g->ch < pre_.map().size() && a->ch < pre_.map().size())
-            {
-                dec_ev_t event;
-                auto numberGamma{pre_.numberByChannel(g->ch)};
-                auto numberAlpha{pre_.numberByChannel(a->ch)};
-                event.g.index = numberGamma;
-                event.g.amp = g->a;
-                event.a.index = numberAlpha;
-                event.a.amp = g->a;
-                event.tdc = g->t - a->t;
-                event.ts = ev.ts;
-                events.push_back(event);
-            }
-            delete g;
-            delete a;
+            std::unique_ptr<stor_puls_t> g{new stor_puls_t()};
+            std::unique_ptr<stor_puls_t> a{new stor_puls_t()};
+            ifs_ >> *g.get() >> *a.get();
+            dec_ev_t event;
+            event.g.index = g.get()->ch;
+            event.g.amp = g.get()->a;
+            event.a.index = a.get()->ch;
+            event.a.amp = g.get()->a;
+            event.tdc = g.get()->t - a.get()->t;
+            event.ts = ev.ts;
+            events_.push_back(event);
 
             continue;
         }
         if (hdr.id == STOR_ID_CNTR && hdr.size > sizeof(stor_packet_hdr_t))
         {
-            if (!c)
-            {
-                hdr.size -= sizeof(stor_packet_hdr_t);
-                ifs_.ignore(hdr.size);
-            }
-            ifs_ >> counters;
-            for (size_t i{0}; i < pre_.map().size(); ++i)
-            {
-                auto number{pre_.numberByChannel(i)};
-                auto type{pre_.typeByChannel(i)};
-                switch (type)
-                {
-                    case ALPHA:
-                    {
-                        counters_[number].rawhits += counters.rawhits[i];
-                        counters_[number].time += counters.time;
-                        break;
-                    }
-                    default:
-                    {
-                        break;
-                    }
-                }
-            }
+            hdr.size -= sizeof(stor_packet_hdr_t);
+            ifs_.ignore(hdr.size);
             continue;
         }
         ifs_.seekg(1 - static_cast<long long>(sizeof(stor_packet_hdr_t)), std::ios_base::cur);
@@ -220,6 +172,21 @@ std::vector<dec_ev_t> Decoder::processA()
     ifs_.close();
 
     return events;
+}
+
+const std::vector<dec_ev_1_t> &Decoder::events_1() const
+{
+    return events_1_;
+}
+
+const dec_cnt_t &Decoder::counters() const
+{
+    return counters_;
+}
+
+const dec_ch_t &Decoder::channels() const
+{
+    return channels_;
 }
 
 

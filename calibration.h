@@ -2,7 +2,6 @@
 #define CALIBRATION_H
 
 #include "adcm_df.h"
-#include "channelmap.h"
 
 #include <TH1.h>
 #include <TMath.h>
@@ -10,8 +9,7 @@
 class Calibration
 {
 public:
-    Calibration(const ChannelMap &map, const std::vector<dec_ev_t> &events);
-    Calibration(const ChannelMap &map);
+    Calibration();
 
     void process();
 
@@ -23,13 +21,16 @@ public:
 
     const std::vector<std::vector<TH1 *> > &histsAmp() const;
 
-    void setNewEvents(const std::vector<dec_ev_t> &newNewEvents);
+    void setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec_ch_t &channels);
+
+    const std::vector<TH1 *> &histsAmpPoGamma() const;
 
 private:
-    const ChannelMap _map;
     std::vector<dec_ev_t> _newEvents;
+    dec_ch_t _channels;
     std::vector<std::vector<TH1 *>> _hists;
     std::vector<std::vector<TH1 *>> _histsAmp;
+    std::vector<TH1 *> _histsAmpPoGamma;
 
     std::vector<dec_ev_t> selectedEvents(uint8_t ig, u_int8_t ia);
     void fillHist(const std::vector<dec_ev_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event));

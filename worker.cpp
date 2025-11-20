@@ -1,53 +1,50 @@
 #include "worker.h"
 
-Worker::Worker(const QString &path, const ChannelMap &pre) : m_pre(pre)
+Worker::Worker(const QString &path)
 {
-    m_decoder = new Decoder(path.toStdString(), m_pre);
-    m_calibration = new Calibration(m_pre);
+    m_decoder = new Decoder(path.toStdString());
+    m_calibration = new Calibration;
     m_dataDelegate = new DataDelegate;
 }
 
-void Worker::doWork(const QString &parameter, Enums::Type type) {
-
-    m_decoder->process();
+void Worker::doWorkS()
+{
     const auto start = std::chrono::steady_clock::now();
-    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
-
-//    m_calibration->setNewEvents(m_decoder->events());
-    m_calibration->setNewEvents(m_data);
-    m_calibration->process();
-
-    doDataDelegateWork(parameter, type);
+    std::cout << "Started!" << std::endl;
+    m_decoder->process();
+    std::cout << "Events with 2 pulses: " << m_decoder->events().size() << std::endl;
+    std::cout << "Events with 1 pulse: " << m_decoder->events_1().size() << std::endl;
+    std::cout << "Counters: " << m_decoder->counters().rawhits.size() << " " << m_decoder->counters().time << std::endl;
+    for (size_t i{0}; i < m_decoder->counters().rawhits.size(); ++i)
+    {
+        std::cout << m_decoder->counters().rawhits.at(i) << " ";
+    }
+    std::cout << std::endl;
+    for (const auto &item : m_decoder->channels().a)
+    {
+        std::cout << static_cast<int>(item) << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "Finished!" << std::endl;
     const auto stop = std::chrono::steady_clock::now();
     std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
-    /* ... here is the expensive or blocking operation ... */
+
+    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
+    m_calibration->setNewEvents(m_data, m_decoder->channels());
+    m_calibration->process();
+    doDataDelegateWork("");
 }
 
-void Worker::doWork1(const QString &parameter, Enums::Type type) {
-    doDataDelegateWork(parameter, type);
-    /* ... here is the expensive or blocking operation ... */
-}
-
-void Worker::doDataDelegateWork(const QString &parameter, Enums::Type type)
+void Worker::doDataDelegateWork(const QString &parameter)
 {
-    /* ... here is the expensive or blocking operation ... */
-    bool ok;
-    auto i = parameter.toUInt(&ok);
-    auto idx{ ok ? i : 0};
 
     QMap<QString, QList<QPointF>> data;
 
-    for (ulong i{0}; i < m_pre.numberOfChannelsAlpha(); ++i)
+    for (ulong i{0}; i < m_decoder->channels().g.size(); ++i)
     {
+        qDebug() << m_calibration->histsAmp().size();
         TH1 *h;
-        switch (type) {
-            case Enums::Type::AMP:
-                h = m_calibration->histsAmp()[idx][i];
-                break;
-            case Enums::Type::TIME:
-                h = m_calibration->hists()[idx][i];
-                break;
-        }
+        h = m_calibration->histsAmp()[i][4];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {
@@ -57,3 +54,48 @@ void Worker::doDataDelegateWork(const QString &parameter, Enums::Type type)
 
     emit resultReady(data);
 }
+
+//    void Worker::doDataDelegateWork(const QString &parameter)
+//    {
+//        /* ... here is the expensive or blocking operation ... */
+//        bool ok;
+//        auto i = parameter.toUInt(&ok);
+//        auto idx{ ok ? i : 0};
+
+//        QMap<QString, QList<QPointF>> data;
+
+//        for (ulong i{0}; i < m_pre.numberOfChannelsAlpha(); ++i)
+//        {
+//            TH1 *h;
+//            switch (type) {
+//                case Enums::Type::AMP:
+//                    h = m_calibration->histsAmp()[idx][i];
+//                    break;
+//                case Enums::Type::TIME:
+//                    h = m_calibration->hists()[idx][i];
+//                    break;
+//            }
+//            m_dataDelegate->histToData(h);
+//            for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
+//            {
+//                data.insert(j.key(), j.value());
+//            }
+//        }
+
+//        emit resultReady(data);
+//    }
+
+//void Worker::doWork(const QString &parameter, Enums::Type type) {
+
+//    m_decoder->process();
+//    const auto start = std::chrono::steady_clock::now();
+//    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
+
+////    m_calibration->setNewEvents(m_decoder->events());
+//    m_calibration->setNewEvents(m_data);
+//    m_calibration->process();
+
+//    doDataDelegateWork(parameter, type);
+//    const auto stop = std::chrono::steady_clock::now();
+//    std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+//}
