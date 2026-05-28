@@ -8,6 +8,8 @@
 #include "mainwidget.h"
 #include "controller.h"
 
+#include "flowlayout.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -40,7 +42,9 @@ private:
     Controller *m_controller;
     QComboBox *m_comboBox;
 
+    QTabWidget *m_tabWidget;
 
+    QWidget *m_page_1;
 
     QHBoxLayout *m_mainLayout;
 
@@ -48,7 +52,9 @@ private:
     QWidget *m_widgetRight;
 
     QGridLayout *m_gLleft;
-    QGridLayout *m_gLright;
+//    QGridLayout *m_gLright;
+
+    FlowLayout *m_flowLayout;
 
 
 };

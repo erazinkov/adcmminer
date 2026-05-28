@@ -15,6 +15,7 @@ SOURCES += \
     datadelegate.cpp \
     decoder.cpp \
     filewatcher.cpp \
+    flowlayout.cpp \
     main.cpp \
     mainwidget.cpp \
     mainwindow.cpp \
@@ -32,9 +33,11 @@ HEADERS += \
     datadelegate.h \
     decoder.h \
     filewatcher.h \
+    flowlayout.h \
     mainwidget.h \
     mainwindow.h \
     mousepresseater.h \
+    utils.h \
     worker.h
 
 FORMS += \

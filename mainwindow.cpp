@@ -13,8 +13,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-
     QWidget *widget = new QWidget;
     m_mainLayout = new QHBoxLayout(widget);
     setCentralWidget(widget);
@@ -52,8 +50,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_gLleft->addWidget(m_label, 1, 0);
     m_gLleft->addWidget(m_comboBox, 1, 1);
 
+    m_tabWidget = new QTabWidget(m_widgetRight);
+    m_page_1 = new QWidget;
+    m_tabWidget->addTab(m_page_1, "Tab &One");
     m_mainLayout->addWidget(m_widgetLeft);
-    m_mainLayout->addWidget(m_widgetRight);
+    m_mainLayout->addWidget(m_tabWidget);
+
+//    m_flowLayout = new FlowLayout(m_page_1);
 
 //    QVBoxLayout *layout = new QVBoxLayout;
 //    layout->setContentsMargins(5, 5, 5, 5);
@@ -192,18 +195,33 @@ void MainWindow::newDataShow()
 
 void MainWindow::onCurrentTextChanged(const QString &currentText)
 {
-    if (m_widgetRight->layout())
+//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
+//    {
+//        m_flowLayout->removeWidget(m_mainWidgetList.at(i));
+//        m_mainWidgetList.at(i)->deleteLater();
+//    }
+
+//    m_mainWidgetList.resize(static_cast<qsizetype>(currentText.toInt()));
+
+//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
+//    {
+//        m_mainWidgetList[i] = new MainWidget;
+//        m_flowLayout->addWidget(m_mainWidgetList.at(i));
+//    }
+
+
+    if (m_page_1->layout())
     {
-        delete m_widgetRight->layout();
+        delete m_page_1->layout();
     }
     for (auto i{0}; i < m_mainWidgetList.size(); ++i)
     {
         m_mainWidgetList.at(i)->deleteLater();
     }
 
-    m_widgetRight->setLayout(new QGridLayout(m_widgetRight));
-    static_cast<QGridLayout*>(m_widgetRight->layout())->setSpacing(0);
-    static_cast<QGridLayout*>(m_widgetRight->layout())->setContentsMargins(0, 0, 0, 0);
+    m_page_1->setLayout(new QGridLayout(m_page_1));
+    static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
+    static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
 
     m_mainWidgetList.resize(static_cast<qsizetype>(currentText.toInt()));
     auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(static_cast<qsizetype>(currentText.toInt()))))};
@@ -215,15 +233,15 @@ void MainWindow::onCurrentTextChanged(const QString &currentText)
             if (index < m_mainWidgetList.size())
             {
                 m_mainWidgetList[index] = new MainWidget;
-                static_cast<QGridLayout*>(m_widgetRight->layout())->addWidget(m_mainWidgetList.at(index), ir, ic);
+                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_mainWidgetList.at(index), ir, ic);
                 index++;
             }
         }
     }
     for (auto i{0}; i < cd; ++i)
     {
-        static_cast<QGridLayout*>(m_widgetRight->layout())->setRowStretch(i, 1);
-        static_cast<QGridLayout*>(m_widgetRight->layout())->setColumnStretch(i, 1);
+        static_cast<QGridLayout*>(m_page_1->layout())->setRowStretch(i, 1);
+        static_cast<QGridLayout*>(m_page_1->layout())->setColumnStretch(i, 1);
     }
 
 

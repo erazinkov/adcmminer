@@ -7,6 +7,8 @@
 #include <TError.h>
 #include <TF1.h>
 
+#include "utils.h"
+
 Calibration::Calibration()
 {
 //    _nGamma = channels.g.size();
@@ -206,22 +208,37 @@ const std::vector<TH1 *> &Calibration::histsAmpPoGamma() const
 
 void Calibration::fillHistsAsync(const std::vector<std::vector<TH1 *> > &hists, double (Calibration::*f)(const dec_ev_t &))
 {
-    std::vector<std::future<void>> futures;
-    for (size_t ig{0}; ig < hists.size(); ++ig)
+//    std::vector<std::future<void>> futures;
+//    for (size_t ig{0}; ig < hists.size(); ++ig)
+//    {
+//        for (size_t ia{0}; ia <  hists[ig].size(); ++ia)
+//        {
+//            futures.emplace_back(std::async(std::launch::async, [this, &hists, &f] (u_int8_t g, u_int8_t a) {
+//                auto sE{selectedEvents(*std::next(_channels.g.begin(), g), *std::next(_channels.a.begin(), a))};
+//                fillHist(sE, hists[g][a], f);
+//            }, ig, ia));
+//        }
+//    }
+
+//    for (size_t i{0}; i < futures.size(); ++i)
+//    {
+//        futures[i].get();
+//    }
+
+    std::vector<std::function<void()>> tasks;
+    for (size_t i{0}; i < hists.size(); ++i)
     {
-        for (size_t ia{0}; ia <  hists[ig].size(); ++ia)
+        for (size_t j{0}; j <  hists.at(i).size(); ++j)
         {
-            futures.emplace_back(std::async(std::launch::async, [this, &hists, &f] (u_int8_t g, u_int8_t a) {
-                auto sE{selectedEvents(*std::next(_channels.g.begin(), g), *std::next(_channels.a.begin(), a))};
-                fillHist(sE, hists[g][a], f);
-            }, ig, ia));
+            tasks.push_back([this, &hists, i, j, &f](){
+                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
+                fillHist(sE, hists.at(i).at(j), f);
+//                fillHistTime(sE, hists.at(i).at(j).get(), 0.0);
+            });
         }
     }
-
-    for (size_t i{0}; i < futures.size(); ++i)
-    {
-        futures[i].get();
-    }
+    func_async(tasks.begin(), tasks.end());
+    tasks.clear();
 }
 
 void Calibration::fillHistsSim(const std::vector<std::vector<TH1 *> > &hists, double (Calibration::*f)(const dec_ev_t &))
@@ -315,4 +332,6 @@ void Calibration::processGammaAmp()
 //    drawHistsToFile(psName, hists);
 
     deleteHists(hists);
+
+
 }

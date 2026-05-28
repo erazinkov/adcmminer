@@ -28,7 +28,7 @@ void Worker::doWorkS()
     std::cout << "Finished!" << std::endl;
     const auto stop = std::chrono::steady_clock::now();
     std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
-    m_data.clear();
+//    m_data.clear();
     m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
     m_calibration->setNewEvents(m_data, m_decoder->channels());
     m_calibration->process();
