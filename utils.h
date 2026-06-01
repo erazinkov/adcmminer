@@ -7,7 +7,7 @@ template<typename Iterator>
 inline void func_async(Iterator first, Iterator last)
 {
     unsigned long const length{static_cast<unsigned long const>(std::distance(first, last))};
-    unsigned long const max_chunk_size{4};
+    unsigned long const max_chunk_size{6};
     if (length < max_chunk_size)
     {
         for (auto it{first}; it != last; ++it)

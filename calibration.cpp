@@ -191,7 +191,10 @@ const std::vector<std::vector<TH1 *> > &Calibration::histsAmp() const
 void Calibration::setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec_ch_t &channels)
 {
     _newEvents = newEvents;
-    std::cout << _newEvents.size() << std::endl;
+    events_.reserve(events_.size() + newEvents.size());
+    events_.insert(events_.end(), newEvents.begin(), newEvents.end());
+    sort_events();
+    std::cout << events_.size() << std::endl;
     _channels = channels;
 //    _nGamma = channels.g.size();
 //    _nAlpha = channels.a.size();
@@ -232,7 +235,8 @@ void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists,
         for (size_t j{0}; j <  hists.at(i).size(); ++j)
         {
             tasks.push_back([this, &hists, i, j, &f](){
-                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
+//                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
+                auto sE{find_events(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
                 fillHist(sE, hists.at(i).at(j), f);
 //                fillHistTime(sE, hists.at(i).at(j).get(), 0.0);
             });
