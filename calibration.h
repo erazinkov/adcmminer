@@ -6,6 +6,8 @@
 #include <TH1.h>
 #include <TMath.h>
 
+#include <histogrammanager.h>
+
 class Calibration
 {
 public:
@@ -25,7 +27,9 @@ public:
 
     const std::vector<TH1 *> &histsAmpPoGamma() const;
 
+    HistogramManager histogramManager_;
 private:
+
     std::vector<dec_ev_t> _newEvents;
     dec_ch_t _channels;
     std::vector<std::vector<TH1 *>> _hists;
@@ -34,7 +38,7 @@ private:
 
     std::vector<dec_ev_t> selectedEvents(uint8_t ig, u_int8_t ia);
     void fillHist(const std::vector<dec_ev_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event));
-    void fillHistsAsync(const std::vector<std::vector<TH1 *>> &hists, double(Calibration::*f)(const dec_ev_t &event));
+    void fillHistsAsync(const std::vector<std::vector<TH1D *>> &hists, double(Calibration::*f)(const dec_ev_t &event));
     void fillHistsSim(const std::vector<std::vector<TH1 *>> &hists, double(Calibration::*f)(const dec_ev_t &event));
     void drawHistsToFile(const std::string &psName, std::vector<std::vector<TH1 *>> hists);
     void prepareHists(const std::string &histName,

@@ -29,28 +29,57 @@ void Worker::doWorkS()
     const auto stop = std::chrono::steady_clock::now();
     std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
 //    m_data.clear();
-    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
-    m_calibration->setNewEvents(m_data, m_decoder->channels());
+//    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
+//    m_calibration->setNewEvents(m_data, m_decoder->channels());
+
+    m_calibration->setNewEvents(m_decoder->events(), m_decoder->channels());
     m_calibration->process();
     doDataDelegateWork("");
+}
+
+QVector<QPointF> histogramToPoints(TH1D *hist) {
+    QVector<QPointF> points;
+
+    if (!hist) return points;
+
+    // Loop over bins (1 to Nbins, ignoring underflow/overflow)
+    for (int bin = 1; bin <= hist->GetNbinsX(); ++bin) {
+        double x = hist->GetBinCenter(bin);  // X coordinate (bin center)
+        double y = hist->GetBinContent(bin); // Y coordinate (bin value)
+        points.append(QPointF(x, y));
+    }
+
+    return points;
 }
 
 void Worker::doDataDelegateWork(const QString &parameter)
 {
 
     QMap<QString, QList<QPointF>> data;
-
     for (ulong i{0}; i < m_decoder->channels().g.size(); ++i)
     {
-        qDebug() << m_calibration->histsAmp().size();
+        qDebug() << m_calibration->histogramManager_.histsGammaAmp()[i][4]->Integral();
         TH1 *h;
-        h = m_calibration->histsAmp()[i][4];
+//        h = m_calibration->histsAmp()[i][4];
+        h = m_calibration->histogramManager_.histsGammaAmp()[i][4];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {
             data.insert(j.key(), j.value());
         }
+        h = nullptr;
     }
+//    for (ulong i{0}; i < m_decoder->channels().g.size(); ++i)
+//    {
+//        qDebug() << m_calibration->histsAmp().size();
+//        TH1 *h;
+//        h = m_calibration->histsAmp()[i][4];
+//        m_dataDelegate->histToData(h);
+//        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
+//        {
+//            data.insert(j.key(), j.value());
+//        }
+//    }
 
     emit resultReady(data);
 }

@@ -191,14 +191,15 @@ const std::vector<std::vector<TH1 *> > &Calibration::histsAmp() const
 void Calibration::setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec_ch_t &channels)
 {
     _newEvents = newEvents;
+    std::cout << _newEvents.size() << std::endl;
     _channels = channels;
-    _nGamma = channels.g.size();
-    _nAlpha = channels.a.size();
-//    _hists.resize(_nGamma);
-//    prepareHists("histTime", 400, -100, 100, _hists);
-    deleteHists(_histsAmp);
-    _histsAmp.resize(_nGamma);
-    prepareHists("histAmp", 640, 0, 4e3, _histsAmp);
+//    _nGamma = channels.g.size();
+//    _nAlpha = channels.a.size();
+////    _hists.resize(_nGamma);
+////    prepareHists("histTime", 400, -100, 100, _hists);
+//    deleteHists(_histsAmp);
+//    _histsAmp.resize(_nGamma);
+//    prepareHists("histAmp", 640, 0, 4e3, _histsAmp);
 }
 
 const std::vector<TH1 *> &Calibration::histsAmpPoGamma() const
@@ -206,7 +207,7 @@ const std::vector<TH1 *> &Calibration::histsAmpPoGamma() const
     return _histsAmpPoGamma;
 }
 
-void Calibration::fillHistsAsync(const std::vector<std::vector<TH1 *> > &hists, double (Calibration::*f)(const dec_ev_t &))
+void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists, double (Calibration::*f)(const dec_ev_t &))
 {
 //    std::vector<std::future<void>> futures;
 //    for (size_t ig{0}; ig < hists.size(); ++ig)
@@ -255,14 +256,14 @@ void Calibration::fillHistsSim(const std::vector<std::vector<TH1 *> > &hists, do
 
 void Calibration::processTime()
 {
-    std::vector<std::vector<TH1 *>> hists(_nGamma);
-    hists.resize(_nGamma);
-    prepareHists("histTimeTemp", 400, -100, 100, hists);
+//    std::vector<std::vector<TH1 *>> hists(_nGamma);
+//    hists.resize(_nGamma);
+//    prepareHists("histTimeTemp", 400, -100, 100, hists);
 
-    double(Calibration::*f)(const dec_ev_t &event);
-    f = &Calibration::valueTime;
-    clearHists(_hists);
-    fillHistsAsync(_hists, f);
+//    double(Calibration::*f)(const dec_ev_t &event);
+//    f = &Calibration::valueTime;
+//    clearHists(_hists);
+//    fillHistsAsync(_hists, f);
 
 //    double(Calibration::*fC)(const dec_ev_t &event);
 //    fC = &Calibration::valueTimeCorrected;
@@ -277,7 +278,7 @@ void Calibration::processTime()
 //    const std::string psName{"time.ps"};
 //    drawHistsToFile(psName, hists);
 
-    deleteHists(hists);
+//    deleteHists(hists);
 }
 
 //void Calibration::processTime()
@@ -312,26 +313,26 @@ void Calibration::processTime()
 
 void Calibration::processGammaAmp()
 {
-    std::vector<std::vector<TH1 *>> hists(_nGamma);
-    prepareHists("histGammaAmp", 640, 0, 4e3, hists);
+//    std::vector<std::vector<TH1 *>> hists(_nGamma);
+//    prepareHists("histGammaAmp", 640, 0, 4e3, hists);
 
     double(Calibration::*f)(const dec_ev_t &event);
     f = &Calibration::valueGammaAmp;
 
-    fillHistsAsync(hists, f);
+    fillHistsAsync(histogramManager_.histsGammaAmp(), f);
 
-    for (ulong i{0}; i < _histsAmp.size(); ++i)
-    {
-        for (ulong j{0}; j < _histsAmp[i].size(); ++j)
-        {
-            _histsAmp[i][j]->Add(hists[i][j]);
-        }
-    }
+//    for (ulong i{0}; i < _histsAmp.size(); ++i)
+//    {
+//        for (ulong j{0}; j < _histsAmp[i].size(); ++j)
+//        {
+//            _histsAmp[i][j]->Add(hists[i][j]);
+//        }
+//    }
 
 //    const std::string psName{"gamma_amp.ps"};
 //    drawHistsToFile(psName, hists);
 
-    deleteHists(hists);
+//    deleteHists(hists);
 
 
 }

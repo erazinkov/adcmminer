@@ -13,6 +13,7 @@ void DataDelegate::histToData(TH1 *hist)
     m_data.clear();
     auto nBins{hist->GetNbinsX()};
     QList<QPointF> data;
+    data.reserve(nBins);
     for (auto i{1}; i <= nBins; ++i)
     {
         auto x{hist->GetBinCenter(i)};
@@ -21,7 +22,7 @@ void DataDelegate::histToData(TH1 *hist)
         {
             y = 0.0;
         }
-        data.append(QPointF(x, y));
+        data.emplace_back(x, y);
     }
 
     if (data.isEmpty())

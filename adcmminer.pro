@@ -20,7 +20,8 @@ SOURCES += \
     mainwidget.cpp \
     mainwindow.cpp \
     mousepresseater.cpp \
-    worker.cpp
+    worker.cpp \
+    histogrammanager.cpp
 
 INCLUDEPATH += $$system(root-config --incdir)
 LIBS += $$system(root-config --libs) -lMinuit -lSpectrum
@@ -38,7 +39,8 @@ HEADERS += \
     mainwindow.h \
     mousepresseater.h \
     utils.h \
-    worker.h
+    worker.h \
+    histogrammanager.h
 
 FORMS += \
     mainwindow.ui
