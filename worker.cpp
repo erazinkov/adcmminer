@@ -58,10 +58,10 @@ void Worker::doDataDelegateWork(const QString &parameter)
     QMap<QString, QList<QPointF>> data;
     for (ulong i{0}; i < m_decoder->channels().g.size(); ++i)
     {
-        qDebug() << m_calibration->histogramManager_.histsGammaAmp()[i][4]->Integral();
+        qDebug() << m_calibration->histogramManager_.histsGammaTime()[i][4]->Integral();
         TH1 *h;
 //        h = m_calibration->histsAmp()[i][4];
-        h = m_calibration->histogramManager_.histsGammaAmp()[i][4];
+        h = m_calibration->histogramManager_.histsGammaTime()[i][4];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {

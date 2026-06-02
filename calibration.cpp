@@ -101,8 +101,8 @@ void Calibration::fillHist(const std::vector<dec_ev_t> &events, TH1 *h, double(C
 {
     for (const auto & item : events)
     {
-        auto v{(this->*f)(item)};
-        h->Fill(v);
+//        auto v{(this->*f)(item)};
+        h->Fill(item.tdc);
     }
 }
 
@@ -193,7 +193,7 @@ void Calibration::setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec
     _newEvents = newEvents;
     events_.reserve(events_.size() + newEvents.size());
     events_.insert(events_.end(), newEvents.begin(), newEvents.end());
-    sort_events();
+//    sort_events();
     std::cout << events_.size() << std::endl;
     _channels = channels;
 //    _nGamma = channels.g.size();
@@ -235,8 +235,8 @@ void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists,
         for (size_t j{0}; j <  hists.at(i).size(); ++j)
         {
             tasks.push_back([this, &hists, i, j, &f](){
-//                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
-                auto sE{find_events(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
+                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
+//                auto sE{find_events(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
                 fillHist(sE, hists.at(i).at(j), f);
 //                fillHistTime(sE, hists.at(i).at(j).get(), 0.0);
             });
@@ -323,7 +323,8 @@ void Calibration::processGammaAmp()
     double(Calibration::*f)(const dec_ev_t &event);
     f = &Calibration::valueGammaAmp;
 
-    fillHistsAsync(histogramManager_.histsGammaAmp(), f);
+//    fillHistsAsync(histogramManager_.histsGammaAmp(), f);
+    fillHistsAsync(histogramManager_.histsGammaTime(), f);
 
 //    for (ulong i{0}; i < _histsAmp.size(); ++i)
 //    {

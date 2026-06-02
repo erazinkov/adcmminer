@@ -52,6 +52,8 @@ public:
 
     const std::vector<std::vector<TH1D *> > &histsGammaAmp() const;
 
+    const std::vector<std::vector<TH1D *> > &histsGammaTime() const;
+
 private:
     static inline constexpr int GAMMA_NUMBER{32};
     static inline constexpr int ALPHA_NUMBER{9};
@@ -70,6 +72,7 @@ private:
 
     std::optional<std::string> outputDirectory_;
     std::vector<std::vector<TH1D *>> histsGammaAmp_;
+    std::vector<std::vector<TH1D *>> histsGammaTime_;
 };
 
 #endif // HISTOGRAMMANAGER_H

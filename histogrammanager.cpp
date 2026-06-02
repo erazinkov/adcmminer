@@ -14,10 +14,20 @@ HistogramManager::HistogramManager(std::optional<std::string> outputDirectory) :
     for (auto ig{0}; ig < GAMMA_NUMBER; ig++) {
         histsGammaAmp_[ig].resize(ALPHA_NUMBER);
         for (auto ia{0}; ia < ALPHA_NUMBER; ia++) {
-            std::string name{Form("hist_%d_%d", ig, ia)};
-            std::string title{Form("hist_%d_%d", ig, ia)};
+            std::string name{Form("hist_gamma_amp_%d_%d", ig, ia)};
+            std::string title{Form("hist_gamma_amp_%d_%d", ig, ia)};
             TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_CHANNEL, XLOW_CHANNEL, XUP_CHANNEL);
             histsGammaAmp_[ig][ia] = h;
+        }
+    }
+    histsGammaTime_.resize(GAMMA_NUMBER);
+    for (auto ig{0}; ig < GAMMA_NUMBER; ig++) {
+        histsGammaTime_[ig].resize(ALPHA_NUMBER);
+        for (auto ia{0}; ia < ALPHA_NUMBER; ia++) {
+            std::string name{Form("hist_gamma_time_%d_%d", ig, ia)};
+            std::string title{Form("hist_gamma_time_%d_%d", ig, ia)};
+            TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_TIME, XLOW_TIME, XUP_TIME);
+            histsGammaTime_[ig][ia] = h;
         }
     }
 }
@@ -28,6 +38,12 @@ HistogramManager::~HistogramManager()
         for (auto ia{0}; ia < ALPHA_NUMBER; ia++) {
             delete histsGammaAmp_[ig][ia];
             histsGammaAmp_[ig][ia] = nullptr;
+        }
+    }
+    for (auto ig{0}; ig < GAMMA_NUMBER; ig++) {
+        for (auto ia{0}; ia < ALPHA_NUMBER; ia++) {
+            delete histsGammaTime_[ig][ia];
+            histsGammaTime_[ig][ia] = nullptr;
         }
     }
 }
@@ -232,4 +248,9 @@ void HistogramManager::saveToRootFile(const std::string &fileName, std::shared_p
 const std::vector<std::vector<TH1D *> > &HistogramManager::histsGammaAmp() const
 {
     return histsGammaAmp_;
+}
+
+const std::vector<std::vector<TH1D *> > &HistogramManager::histsGammaTime() const
+{
+    return histsGammaTime_;
 }
