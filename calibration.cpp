@@ -97,7 +97,7 @@ double Calibration::calculateTimePeakPos(TH1 *hist)
     return timePeakPos;
 }
 
-void Calibration::fillHist(const std::vector<dec_ev_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event))
+void Calibration::fillHist(const std::vector<dec_ev_m_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event))
 {
     for (const auto & item : events)
     {
@@ -202,7 +202,7 @@ void Calibration::setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec
     //    prepareHists("histAmp", 640, 0, 4e3, _histsAmp);
 }
 
-void Calibration::setNewEventsM(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t> > &newEventsM, const dec_ch_t &channels)
+void Calibration::setNewEventsM(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &newEventsM, const dec_ch_t &channels)
 {
     for (const auto& [key, vec] : newEventsM) {
         auto [it, inserted] = events_m_.try_emplace(key, vec);
@@ -241,8 +241,8 @@ void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists,
 //    }
 
     std::vector<std::function<void()>> tasks;
-//    for (size_t i{0}; i < hists.size(); ++i)
-    for (size_t i{0}; i < 1; ++i)
+    for (size_t i{0}; i < hists.size(); ++i)
+//    for (size_t i{0}; i < 1; ++i)
     {
         for (size_t j{0}; j <  hists.at(i).size(); ++j)
         {
@@ -251,7 +251,7 @@ void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists,
 //                auto sE{find_events(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
                 std::pair<uint8_t, uint8_t> p{*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j)};
 //                std::vector<dec_ev_t> sE{events_m_[p]};
-
+//                std::cout << events_m_[p].size() << std::endl;
                 fillHist(events_m_[p], hists.at(i).at(j), f);
 //                fillHistTime(sE, hists.at(i).at(j).get(), 0.0);
             });
@@ -263,14 +263,14 @@ void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists,
 
 void Calibration::fillHistsSim(const std::vector<std::vector<TH1 *> > &hists, double (Calibration::*f)(const dec_ev_t &))
 {
-    for (size_t ig{0}; ig < hists.size(); ++ig)
-    {
-        for (size_t ia{0}; ia <  hists[ig].size(); ++ia)
-        {
-            auto sE{selectedEvents(static_cast<u_int8_t>(ig), static_cast<u_int8_t>(ia))};
-            fillHist(sE, hists[ig][ia], f);
-        }
-    }
+//    for (size_t ig{0}; ig < hists.size(); ++ig)
+//    {
+//        for (size_t ia{0}; ia <  hists[ig].size(); ++ia)
+//        {
+//            auto sE{selectedEvents(static_cast<u_int8_t>(ig), static_cast<u_int8_t>(ia))};
+//            fillHist(sE, hists[ig][ia], f);
+//        }
+//    }
 }
 
 void Calibration::processTime()

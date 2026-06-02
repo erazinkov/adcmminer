@@ -24,6 +24,7 @@ void Decoder::process()
 
     events_.clear();
     events_1_.clear();
+    events_m_.clear();
 
     stor_packet_hdr_t hdr;
     stor_ev_hdr_t ev;
@@ -62,14 +63,17 @@ void Decoder::process()
                     std::unique_ptr<stor_puls_t> g{new stor_puls_t()};
                     std::unique_ptr<stor_puls_t> a{new stor_puls_t()};
                     ifs_ >> *g.get() >> *a.get();
-                    dec_ev_t event;
-                    event.g.index = g.get()->ch;
-                    event.g.amp = g.get()->a;
-                    event.a.index = a.get()->ch;
-                    event.a.amp = g.get()->a;
-                    event.tdc = g.get()->t - a.get()->t;
-                    event.ts = ev.ts;
-                    events_m_[{g.get()->ch, a.get()->ch}].push_back(event);
+//                    dec_ev_t event;
+//                    event.g.index = g.get()->ch;
+//                    event.g.amp = g.get()->a;
+//                    event.a.index = a.get()->ch;
+//                    event.a.amp = g.get()->a;
+//                    event.tdc = g.get()->t - a.get()->t;
+//                    event.ts = ev.ts;
+                    dec_ev_m_t event_m;
+                    event_m.tdc = g.get()->t - a.get()->t;
+                    event_m.amp = g.get()->a;
+                    events_m_[{g.get()->ch, a.get()->ch}].push_back(event_m);
 //                    events_.push_back(event);
                     channels_.g.insert(g.get()->ch);
                     channels_.a.insert(a.get()->ch);
@@ -190,7 +194,7 @@ const dec_ch_t &Decoder::channels() const
     return channels_;
 }
 
-const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t> > &Decoder::events_m() const
+const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &Decoder::events_m() const
 {
     return events_m_;
 }

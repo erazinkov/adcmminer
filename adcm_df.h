@@ -84,7 +84,8 @@ struct dec_det_t
 } __attribute__ ((packed));
 
 struct dec_ev_m_t {
-
+    float tdc;
+    float amp;
 } __attribute__ ((packed));
 
 struct dec_ev_t

@@ -29,14 +29,14 @@ public:
     const std::vector<std::vector<TH1 *> > &histsAmp() const;
 
     void setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec_ch_t &channels);
-    void setNewEventsM(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t>> &newEventsM, const dec_ch_t &channels);
+    void setNewEventsM(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> &newEventsM, const dec_ch_t &channels);
 
     const std::vector<TH1 *> &histsAmpPoGamma() const;
 
     HistogramManager histogramManager_;
 private:
 
-    std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t>> events_m_;
+    std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> events_m_;
 
 
     std::vector<dec_ev_t> _newEvents;
@@ -46,7 +46,7 @@ private:
     std::vector<TH1 *> _histsAmpPoGamma;
 
     std::vector<dec_ev_t> selectedEvents(uint8_t ig, u_int8_t ia);
-    void fillHist(const std::vector<dec_ev_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event));
+    void fillHist(const std::vector<dec_ev_m_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event));
     void fillHistsAsync(const std::vector<std::vector<TH1D *>> &hists, double(Calibration::*f)(const dec_ev_t &event));
     void fillHistsSim(const std::vector<std::vector<TH1 *>> &hists, double(Calibration::*f)(const dec_ev_t &event));
     void drawHistsToFile(const std::string &psName, std::vector<std::vector<TH1 *>> hists);
