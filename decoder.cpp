@@ -69,7 +69,8 @@ void Decoder::process()
                     event.a.amp = g.get()->a;
                     event.tdc = g.get()->t - a.get()->t;
                     event.ts = ev.ts;
-                    events_.push_back(event);
+                    events_m_[{g.get()->ch, a.get()->ch}].push_back(event);
+//                    events_.push_back(event);
                     channels_.g.insert(g.get()->ch);
                     channels_.a.insert(a.get()->ch);
                     break;
@@ -187,6 +188,11 @@ const dec_cnt_t &Decoder::counters() const
 const dec_ch_t &Decoder::channels() const
 {
     return channels_;
+}
+
+const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t> > &Decoder::events_m() const
+{
+    return events_m_;
 }
 
 

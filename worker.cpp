@@ -9,32 +9,40 @@ Worker::Worker(const QString &path)
 
 void Worker::doWorkS()
 {
-    const auto start = std::chrono::steady_clock::now();
+    auto start = std::chrono::steady_clock::now();
     std::cout << "Started!" << std::endl;
     m_decoder->process();
-    std::cout << "Events with 2 pulses: " << m_decoder->events().size() << std::endl;
-    std::cout << "Events with 1 pulse: " << m_decoder->events_1().size() << std::endl;
-    std::cout << "Counters: " << m_decoder->counters().rawhits.size() << " " << m_decoder->counters().time << std::endl;
-    for (size_t i{0}; i < m_decoder->counters().rawhits.size(); ++i)
-    {
-        std::cout << m_decoder->counters().rawhits.at(i) << " ";
-    }
-    std::cout << std::endl;
-    for (const auto &item : m_decoder->channels().a)
-    {
-        std::cout << static_cast<int>(item) << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "Events with 2 pulses: " << m_decoder->events().size() << std::endl;
+//    std::cout << "Events with 1 pulse: " << m_decoder->events_1().size() << std::endl;
+//    std::cout << "Counters: " << m_decoder->counters().rawhits.size() << " " << m_decoder->counters().time << std::endl;
+//    for (size_t i{0}; i < m_decoder->counters().rawhits.size(); ++i)
+//    {
+//        std::cout << m_decoder->counters().rawhits.at(i) << " ";
+//    }
+//    std::cout << std::endl;
+//    for (const auto &item : m_decoder->channels().a)
+//    {
+//        std::cout << static_cast<int>(item) << " ";
+//    }
+//    std::cout << std::endl;
     std::cout << "Finished!" << std::endl;
-    const auto stop = std::chrono::steady_clock::now();
+    auto stop = std::chrono::steady_clock::now();
     std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
 //    m_data.clear();
 //    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
 //    m_calibration->setNewEvents(m_data, m_decoder->channels());
-
-    m_calibration->setNewEvents(m_decoder->events(), m_decoder->channels());
+    start = std::chrono::steady_clock::now();
+    m_calibration->setNewEventsM(m_decoder->events_m(), m_decoder->channels());
+    stop = std::chrono::steady_clock::now();
+    std::cout << "setNewEventsM Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+    start = std::chrono::steady_clock::now();
     m_calibration->process();
+    stop = std::chrono::steady_clock::now();
+    std::cout << "process Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+    start = std::chrono::steady_clock::now();
     doDataDelegateWork("");
+    stop = std::chrono::steady_clock::now();
+    std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
 }
 
 QVector<QPointF> histogramToPoints(TH1D *hist) {
@@ -58,7 +66,7 @@ void Worker::doDataDelegateWork(const QString &parameter)
     QMap<QString, QList<QPointF>> data;
     for (ulong i{0}; i < m_decoder->channels().g.size(); ++i)
     {
-        qDebug() << m_calibration->histogramManager_.histsGammaTime()[i][4]->Integral();
+//        qDebug() << m_calibration->histogramManager_.histsGammaTime()[i][4]->Integral();
         TH1 *h;
 //        h = m_calibration->histsAmp()[i][4];
         h = m_calibration->histogramManager_.histsGammaTime()[i][4];

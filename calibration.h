@@ -11,6 +11,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdint>
+#include <map>
 
 class Calibration
 {
@@ -28,35 +29,17 @@ public:
     const std::vector<std::vector<TH1 *> > &histsAmp() const;
 
     void setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec_ch_t &channels);
+    void setNewEventsM(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t>> &newEventsM, const dec_ch_t &channels);
 
     const std::vector<TH1 *> &histsAmpPoGamma() const;
 
     HistogramManager histogramManager_;
 private:
 
-    void sort_events() {
-        std::sort(events_.begin(), events_.end(),
-            [](const dec_ev_t& lhs, const dec_ev_t& rhs) {
-                if (lhs.a.index != rhs.a.index) return lhs.a.index < rhs.a.index;
-                return lhs.g.index < rhs.g.index;
-            });
-    }
-    std::vector<dec_ev_t> find_events(uint8_t g_idx, uint8_t a_idx) {
-        dec_ev_t target{};
-        target.a.index = a_idx;
-        target.g.index = g_idx;
+    std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t>> events_m_;
 
-        auto range = std::equal_range(events_.begin(), events_.end(), target,
-            [](const dec_ev_t& x, const dec_ev_t& y) {
-                if (x.a.index != y.a.index)
-                    return x.a.index < y.a.index;
-                return x.g.index < y.g.index;
-            });
 
-        return std::vector<dec_ev_t>(range.first, range.second);
-    }
     std::vector<dec_ev_t> _newEvents;
-    std::vector<dec_ev_t> events_;
     dec_ch_t _channels;
     std::vector<std::vector<TH1 *>> _hists;
     std::vector<std::vector<TH1 *>> _histsAmp;

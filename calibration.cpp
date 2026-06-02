@@ -191,10 +191,7 @@ const std::vector<std::vector<TH1 *> > &Calibration::histsAmp() const
 void Calibration::setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec_ch_t &channels)
 {
     _newEvents = newEvents;
-    events_.reserve(events_.size() + newEvents.size());
-    events_.insert(events_.end(), newEvents.begin(), newEvents.end());
-//    sort_events();
-    std::cout << events_.size() << std::endl;
+
     _channels = channels;
 //    _nGamma = channels.g.size();
 //    _nAlpha = channels.a.size();
@@ -202,7 +199,21 @@ void Calibration::setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec
 ////    prepareHists("histTime", 400, -100, 100, _hists);
 //    deleteHists(_histsAmp);
 //    _histsAmp.resize(_nGamma);
-//    prepareHists("histAmp", 640, 0, 4e3, _histsAmp);
+    //    prepareHists("histAmp", 640, 0, 4e3, _histsAmp);
+}
+
+void Calibration::setNewEventsM(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_t> > &newEventsM, const dec_ch_t &channels)
+{
+    for (const auto& [key, vec] : newEventsM) {
+        auto [it, inserted] = events_m_.try_emplace(key, vec);
+        if (!inserted) {
+            it->second.insert(it->second.end(), vec.begin(), vec.end());
+        }
+    }
+//    for (const auto& [key, vec] : newEventsM) {
+//        std::cout << +key.first << " " << +key.second << " " << events_m_.at(key).size() << std::endl;
+//    }
+    _channels = channels;
 }
 
 const std::vector<TH1 *> &Calibration::histsAmpPoGamma() const
@@ -230,14 +241,18 @@ void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists,
 //    }
 
     std::vector<std::function<void()>> tasks;
-    for (size_t i{0}; i < hists.size(); ++i)
+//    for (size_t i{0}; i < hists.size(); ++i)
+    for (size_t i{0}; i < 1; ++i)
     {
         for (size_t j{0}; j <  hists.at(i).size(); ++j)
         {
             tasks.push_back([this, &hists, i, j, &f](){
-                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
+//                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
 //                auto sE{find_events(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
-                fillHist(sE, hists.at(i).at(j), f);
+                std::pair<uint8_t, uint8_t> p{*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j)};
+//                std::vector<dec_ev_t> sE{events_m_[p]};
+
+                fillHist(events_m_[p], hists.at(i).at(j), f);
 //                fillHistTime(sE, hists.at(i).at(j).get(), 0.0);
             });
         }
