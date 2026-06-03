@@ -11,7 +11,7 @@
 class HistogramManager
 {
 public:
-    HistogramManager(std::optional<std::string> outputDirectory = std::nullopt);
+    HistogramManager(const int &gammaNumber, const int &alphaNumber, std::optional<std::string> outputDirectory = std::nullopt);
     ~HistogramManager();
     std::vector<std::vector<std::shared_ptr<TH1>>> createHistograms(const std::string &histName,
                                                                 int nBinsX,
@@ -50,29 +50,38 @@ public:
     void saveToRootFile(const std::string &fileName,
                         std::shared_ptr<TH1> hist) const;
 
-    const std::vector<std::vector<TH1D *> > &histsGammaAmp() const;
+    const std::vector<std::vector<TH1D *> > &histsAmpByGammaAlpha() const;
+    const std::vector<std::vector<TH1D *> > &histsTimeByGammaAlpha() const;
 
-    const std::vector<std::vector<TH1D *> > &histsGammaTime() const;
+    const std::vector<TH1D *> &histsAmpByAlpha() const;
+
+    const std::vector<std::vector<TH1D *> > &histsTimeCorrectedByGammaAlpha() const;
+
+    const std::vector<TH1D *> &histsTimeCorrectedByAlpha() const;
 
 private:
-    static inline constexpr int GAMMA_NUMBER{32};
-    static inline constexpr int ALPHA_NUMBER{9};
+    const int gammaNumber_;
+    const int alphaNumber_;
 
-    static inline constexpr int BINS_TIME{800};
-    static inline constexpr int BINS_CHANNEL{400};
-    static inline constexpr int BINS_ENERGY{640};
+    static constexpr int BINS_TIME{800};
+    static constexpr int BINS_CHANNEL{400};
+    static constexpr int BINS_ENERGY{640};
 
-    static inline constexpr double XLOW_TIME{-200.0};
-    static inline constexpr double XLOW_CHANNEL{0.0};
-    static inline constexpr double XLOW_ENERGY{0.0};
+    static constexpr double XLOW_TIME{-200.0};
+    static constexpr double XLOW_CHANNEL{0.0};
+    static constexpr double XLOW_ENERGY{0.0};
 
-    static inline constexpr double XUP_TIME{200.0};
-    static inline constexpr double XUP_CHANNEL{4.0e3};
-    static inline constexpr double XUP_ENERGY{8.0e3};
+    static constexpr double XUP_TIME{200.0};
+    static constexpr double XUP_CHANNEL{4.0e3};
+    static constexpr double XUP_ENERGY{8.0e3};
 
     std::optional<std::string> outputDirectory_;
-    std::vector<std::vector<TH1D *>> histsGammaAmp_;
-    std::vector<std::vector<TH1D *>> histsGammaTime_;
+    std::vector<std::vector<TH1D *>> histsAmpByGammaAlpha_;
+    std::vector<std::vector<TH1D *>> histsTimeByGammaAlpha_;
+    std::vector<TH1D *> histsAmpByAlpha_;
+
+    std::vector<std::vector<TH1D *>> histsTimeCorrectedByGammaAlpha_;
+    std::vector<TH1D *> histsTimeCorrectedByAlpha_;
 };
 
 #endif // HISTOGRAMMANAGER_H

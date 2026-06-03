@@ -30,6 +30,7 @@ HEADERS += \
     adcm_df.h \
     calibration.h \
     channelmap.h \
+    constants.h \
     controller.h \
     datadelegate.h \
     decoder.h \

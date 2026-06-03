@@ -33,19 +33,23 @@ public:
 
     const std::vector<TH1 *> &histsAmpPoGamma() const;
 
-    HistogramManager histogramManager_;
+    HistogramManager *histogramManager;
 private:
 
     std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> events_m_;
 
-
+    std::map<std::pair<uint8_t, uint8_t>, double> timeCorrections_;
     std::vector<dec_ev_t> _newEvents;
-    dec_ch_t _channels;
+    dec_ch_t channels_;
     std::vector<std::vector<TH1 *>> _hists;
     std::vector<std::vector<TH1 *>> _histsAmp;
     std::vector<TH1 *> _histsAmpPoGamma;
 
     std::vector<dec_ev_t> selectedEvents(uint8_t ig, u_int8_t ia);
+    void fillHistsTimeByGammaAlpha(const std::vector<std::vector<TH1D *>> &hists, bool isCorrected = false);
+    void fillHistTime(const std::vector<dec_ev_m_t> &events, TH1 *h, double correction);
+    void fillHistsTimeByAlpha(const std::vector<std::vector<TH1D *>> &hists);
+    void fillHists(const std::vector<std::vector<TH1D *>> &hists);
     void fillHist(const std::vector<dec_ev_m_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event));
     void fillHistsAsync(const std::vector<std::vector<TH1D *>> &hists, double(Calibration::*f)(const dec_ev_t &event));
     void fillHistsSim(const std::vector<std::vector<TH1 *>> &hists, double(Calibration::*f)(const dec_ev_t &event));

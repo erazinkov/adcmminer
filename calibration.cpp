@@ -8,9 +8,18 @@
 #include <TF1.h>
 
 #include "utils.h"
+#include "constants.h"
 
 Calibration::Calibration()
 {
+    histogramManager = new HistogramManager(AppConstants::MAX_GAMMA_NUMBER, AppConstants::MAX_ALPHA_NUMBER);
+    for (auto ig{0}; ig < AppConstants::MAX_GAMMA_NUMBER; ig++) {
+        for (auto ia{0}; ia < AppConstants::MAX_ALPHA_NUMBER; ia++) {
+            std::pair<uint8_t, uint8_t> p{ig, ia};
+            timeCorrections_[p] = 0.0;
+        }
+    }
+
 //    _nGamma = channels.g.size();
 //    _nAlpha = channels.a.size();
 
@@ -30,7 +39,11 @@ Calibration::Calibration()
 void Calibration::process()
 {
 //    processTime();
-    processGammaAmp();
+//    processGammaAmp();
+    fillHistsTimeByGammaAlpha(histogramManager->histsTimeByGammaAlpha(), false);
+    // TODO calculate time corrections
+    fillHistsTimeByGammaAlpha(histogramManager->histsTimeCorrectedByGammaAlpha(), true);
+    fillHistsTimeByAlpha(histogramManager->histsTimeCorrectedByGammaAlpha());
 }
 
 const std::vector<std::vector<TH1 *> > &Calibration::hists() const
@@ -50,6 +63,40 @@ std::vector<dec_ev_t> Calibration::selectedEvents(uint8_t ig, u_int8_t ia)
         ++it;
     }
     return selectedEvents;
+}
+
+void Calibration::fillHistsTimeByGammaAlpha(const std::vector<std::vector<TH1D *> > &hists, bool isCorrected)
+{
+    std::vector<std::function<void()>> tasks;
+    for (size_t i{0}; i < hists.size(); ++i) {
+        for (size_t j{0}; j <  hists.at(i).size(); ++j) {
+            tasks.push_back([this, &hists, i, j, &isCorrected](){
+                std::pair<uint8_t, uint8_t> p{*std::next(channels_.g.begin(), i), *std::next(channels_.a.begin(), j)};
+                fillHistTime(events_m_[p], hists.at(i).at(j), isCorrected ? timeCorrections_[p] : 0.0);
+            });
+        }
+    }
+    func_async(tasks.begin(), tasks.end());
+    tasks.clear();
+}
+
+void Calibration::fillHistTime(const std::vector<dec_ev_m_t> &events, TH1 *h, double correction)
+{
+    for (const auto & item : events) {
+        h->Fill(item.tdc - correction);
+    }
+}
+
+void Calibration::fillHistsTimeByAlpha(const std::vector<std::vector<TH1D *> > &hists)
+{
+    for (size_t i{0}; i <  histogramManager->histsTimeCorrectedByAlpha().size(); ++i) {
+        histogramManager->histsTimeCorrectedByAlpha()[i]->Reset();
+    }
+    for (size_t i{0}; i < hists.size(); ++i) {
+        for (size_t j{0}; j <  hists.at(i).size(); ++j) {
+            histogramManager->histsTimeCorrectedByAlpha()[j]->Add(hists.at(i).at(j));
+        }
+    }
 }
 
 double Calibration::valueTime(const dec_ev_t &event)
@@ -102,7 +149,7 @@ void Calibration::fillHist(const std::vector<dec_ev_m_t> &events, TH1 *h, double
     for (const auto & item : events)
     {
 //        auto v{(this->*f)(item)};
-        h->Fill(item.tdc);
+        h->Fill(item.amp);
     }
 }
 
@@ -192,7 +239,7 @@ void Calibration::setNewEvents(const std::vector<dec_ev_t> &newEvents, const dec
 {
     _newEvents = newEvents;
 
-    _channels = channels;
+    channels_ = channels;
 //    _nGamma = channels.g.size();
 //    _nAlpha = channels.a.size();
 ////    _hists.resize(_nGamma);
@@ -213,7 +260,7 @@ void Calibration::setNewEventsM(const std::map<std::pair<uint8_t, uint8_t>, std:
 //    for (const auto& [key, vec] : newEventsM) {
 //        std::cout << +key.first << " " << +key.second << " " << events_m_.at(key).size() << std::endl;
 //    }
-    _channels = channels;
+    channels_ = channels;
 }
 
 const std::vector<TH1 *> &Calibration::histsAmpPoGamma() const
@@ -249,7 +296,7 @@ void Calibration::fillHistsAsync(const std::vector<std::vector<TH1D *> > &hists,
             tasks.push_back([this, &hists, i, j, &f](){
 //                auto sE{selectedEvents(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
 //                auto sE{find_events(*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j))};
-                std::pair<uint8_t, uint8_t> p{*std::next(_channels.g.begin(), i), *std::next(_channels.a.begin(), j)};
+                std::pair<uint8_t, uint8_t> p{*std::next(channels_.g.begin(), i), *std::next(channels_.a.begin(), j)};
 //                std::vector<dec_ev_t> sE{events_m_[p]};
 //                std::cout << events_m_[p].size() << std::endl;
                 fillHist(events_m_[p], hists.at(i).at(j), f);
@@ -339,7 +386,7 @@ void Calibration::processGammaAmp()
     f = &Calibration::valueGammaAmp;
 
 //    fillHistsAsync(histogramManager_.histsGammaAmp(), f);
-    fillHistsAsync(histogramManager_.histsGammaTime(), f);
+    fillHistsAsync(histogramManager->histsAmpByGammaAlpha(), f);
 
 //    for (ulong i{0}; i < _histsAmp.size(); ++i)
 //    {
