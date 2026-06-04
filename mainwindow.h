@@ -28,10 +28,15 @@ private slots:
     void newDataShow();
     void onCurrentTextChanged(const QString &);
 
+    void setupTimeCorrectedByAlpha();
+
 private:
     Ui::MainWindow *ui;
     FileWatcher *m_fileWatcher;
     QString m_path;
+
+    QList<MainWidget *> m_mainWidgetsTimeCorrectedByAlpha;
+
     QList<MainWidget *> m_mainWidgetList;
     QList<QAbstractSeries *> m_series;
     QMap<QString, QList<QPointF>> m_data;

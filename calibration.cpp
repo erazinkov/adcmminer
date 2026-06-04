@@ -13,8 +13,8 @@
 Calibration::Calibration()
 {
     histogramManager = new HistogramManager(AppConstants::MAX_GAMMA_NUMBER, AppConstants::MAX_ALPHA_NUMBER);
-    for (auto ig{0}; ig < AppConstants::MAX_GAMMA_NUMBER; ig++) {
-        for (auto ia{0}; ia < AppConstants::MAX_ALPHA_NUMBER; ia++) {
+    for (auto ig{0}; ig < AppConstants::MAX_GAMMA_NUMBER; ++ig) {
+        for (auto ia{0}; ia < AppConstants::MAX_ALPHA_NUMBER; ++ia) {
             std::pair<uint8_t, uint8_t> p{ig, ia};
             timeCorrections_[p] = 0.0;
         }
@@ -34,15 +34,22 @@ Calibration::Calibration()
 //    prepareHists("histAmp", 640, 0, 4e3, _histsAmp);
 }
 
-
-
 void Calibration::process()
 {
 //    processTime();
 //    processGammaAmp();
     fillHistsTimeByGammaAlpha(histogramManager->histsTimeByGammaAlpha(), false);
-    // TODO calculate time corrections
+    // TODO move to function ???
+    for (size_t ig{0}; ig < histogramManager->histsTimeByGammaAlpha().size(); ++ig) {
+        for (size_t ia{0}; ia <  histogramManager->histsTimeByGammaAlpha().at(ig).size(); ++ia) {
+            std::pair<uint8_t, uint8_t> p{ig, ia};
+            timeCorrections_[p] = histogramManager->histsTimeByGammaAlpha().at(ig).at(ia)->GetBinCenter(histogramManager->histsTimeByGammaAlpha().at(ig).at(ia)->GetMaximumBin());
+        }
+    }
     fillHistsTimeByGammaAlpha(histogramManager->histsTimeCorrectedByGammaAlpha(), true);
+    fillHistsAmpByGammaAlpha(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg());
+
+    fillHistsAmpByAlpha(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg());
     fillHistsTimeByAlpha(histogramManager->histsTimeCorrectedByGammaAlpha());
 }
 
@@ -70,9 +77,10 @@ void Calibration::fillHistsTimeByGammaAlpha(const std::vector<std::vector<TH1D *
     std::vector<std::function<void()>> tasks;
     for (size_t i{0}; i < hists.size(); ++i) {
         for (size_t j{0}; j <  hists.at(i).size(); ++j) {
-            tasks.push_back([this, &hists, i, j, &isCorrected](){
+            tasks.push_back([this, &hists, i, j, isCorrected](){
+                hists.at(i).at(j)->Reset();
                 std::pair<uint8_t, uint8_t> p{*std::next(channels_.g.begin(), i), *std::next(channels_.a.begin(), j)};
-                fillHistTime(events_m_[p], hists.at(i).at(j), isCorrected ? timeCorrections_[p] : 0.0);
+                fillHistTime(events_m_[p], hists.at(i).at(j), isCorrected ? timeCorrections_[{i, j}] : 0.0);
             });
         }
     }
@@ -95,6 +103,50 @@ void Calibration::fillHistsTimeByAlpha(const std::vector<std::vector<TH1D *> > &
     for (size_t i{0}; i < hists.size(); ++i) {
         for (size_t j{0}; j <  hists.at(i).size(); ++j) {
             histogramManager->histsTimeCorrectedByAlpha()[j]->Add(hists.at(i).at(j));
+        }
+    }
+}
+
+void Calibration::fillHistsAmpByGammaAlpha(const std::vector<std::vector<TH1D *> > &histsSg, const std::vector<std::vector<TH1D *> > &histsBg)
+{
+    std::vector<std::function<void()>> tasks;
+    for (size_t i{0}; i < histsSg.size(); ++i) {
+        for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
+            tasks.push_back([this, &histsSg, &histsBg, i, j](){
+                histsSg.at(i).at(j)->Reset();
+                histsBg.at(i).at(j)->Reset();
+                std::pair<uint8_t, uint8_t> p{*std::next(channels_.g.begin(), i), *std::next(channels_.a.begin(), j)};
+                auto minT_sg{timeCorrections_[{i, j}] - 3.0};
+                auto maxT_sg{timeCorrections_[{i, j}] + 3.0};
+                fillHistAmp(events_m_[p], histsSg.at(i).at(j), minT_sg, maxT_sg);
+                auto minT_bg{timeCorrections_[{i, j}] - 30.0};
+                auto maxT_bg{timeCorrections_[{i, j}] - 20.0};
+                fillHistAmp(events_m_[p], histsBg.at(i).at(j), minT_bg, maxT_bg);
+            });
+        }
+    }
+    func_async(tasks.begin(), tasks.end());
+    tasks.clear();
+}
+
+void Calibration::fillHistAmp(const std::vector<dec_ev_m_t> &events, TH1 *h, double minT, double maxT)
+{
+    for (const auto & item : events) {
+        if (minT <= item.tdc && item.tdc <= maxT) {
+            h->Fill(item.amp);
+        }
+    }
+}
+
+void Calibration::fillHistsAmpByAlpha(const std::vector<std::vector<TH1D *>> &histsSg, const std::vector<std::vector<TH1D *> > &histsBg)
+{
+    for (size_t i{0}; i <  histogramManager->histsAmpByAlpha().size(); ++i) {
+        histogramManager->histsAmpByAlpha()[i]->Reset();
+    }
+    for (size_t i{0}; i < histsSg.size(); ++i) {
+        for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
+            histogramManager->histsAmpByAlpha()[j]->Add(histsSg.at(i).at(j));
+            histogramManager->histsAmpByAlpha()[j]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
         }
     }
 }

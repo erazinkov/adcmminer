@@ -13,7 +13,7 @@ MainWidget::MainWidget(QWidget *parent)
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
     // Set the title and show legend
-    m_chart->setAnimationOptions(QChart::AnimationOption::NoAnimation);
+    m_chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
 //    m_chart->setTitle("Legendmarker example (click on legend)");
     m_chart->legend()->setVisible(false);
 //    m_chart->legend()->setAlignment(Qt::AlignRight);

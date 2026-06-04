@@ -8,6 +8,9 @@
 
 #include <Q3DSurface>
 
+#include "constants.h"
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -56,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_mainLayout->addWidget(m_widgetLeft);
     m_mainLayout->addWidget(m_tabWidget);
 
+
+
 //    m_flowLayout = new FlowLayout(m_page_1);
 
 //    QVBoxLayout *layout = new QVBoxLayout;
@@ -94,7 +99,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     workerThread.start();
 
-    onCurrentTextChanged(m_comboBox->currentText());
+    setupTimeCorrectedByAlpha();
+
+//    onCurrentTextChanged(m_comboBox->currentText());
 }
 
 MainWindow::~MainWindow()
@@ -139,10 +146,10 @@ void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
         m_series.append(areaSeries);
     }
 
-    for (auto i{0}; i < std::min(m_series.size(), m_mainWidgetList.size()); ++i)
+    for (auto i{0}; i < std::min(m_series.size(), m_mainWidgetsTimeCorrectedByAlpha.size()); ++i)
     {
-        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-        m_mainWidgetList.at(i)->process({m_series.at(i)});
+        m_mainWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_series.at(i)->name());
+        m_mainWidgetsTimeCorrectedByAlpha.at(i)->process({m_series.at(i)});
     }
 
 //    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
@@ -246,5 +253,37 @@ void MainWindow::onCurrentTextChanged(const QString &currentText)
 
 
 
+}
+
+void MainWindow::setupTimeCorrectedByAlpha()
+{
+    m_page_1->setLayout(new QGridLayout(m_page_1));
+    static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
+    static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
+    m_mainWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_ALPHA_NUMBER)))};
+    auto index{0};
+    for (auto ir{0}; ir < cd; ++ir)
+    {
+        for (auto ic{0}; ic < cd; ++ic)
+        {
+            if (index < m_mainWidgetsTimeCorrectedByAlpha.size())
+            {
+                m_mainWidgetsTimeCorrectedByAlpha[index] = new MainWidget;
+                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_mainWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
+                index++;
+            }
+        }
+    }
+    for (auto i{0}; i < cd; ++i)
+    {
+        static_cast<QGridLayout*>(m_page_1->layout())->setRowStretch(i, 1);
+        static_cast<QGridLayout*>(m_page_1->layout())->setColumnStretch(i, 1);
+    }
+//    for (auto i{0}; i < m_mainWidgetsTimeCorrectedByAlpha.size(); ++i) {
+//        m_mainWidgetsTimeCorrectedByAlpha[i] = new MainWidget;
+//        m_page_1->layout()->addWidget(m_mainWidgetsTimeCorrectedByAlpha.at(i));
+////        m_flowLayout->addWidget(m_mainWidgetsTimeCorrectedByAlpha.at(i));
+//    }
 }
 

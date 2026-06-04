@@ -59,6 +59,10 @@ public:
 
     const std::vector<TH1D *> &histsTimeCorrectedByAlpha() const;
 
+    const std::vector<std::vector<TH1D *> > &histsAmpByGammaAlphaSg() const;
+
+    const std::vector<std::vector<TH1D *> > &histsAmpByGammaAlphaBg() const;
+
 private:
     const int gammaNumber_;
     const int alphaNumber_;
@@ -76,12 +80,14 @@ private:
     static constexpr double XUP_ENERGY{8.0e3};
 
     std::optional<std::string> outputDirectory_;
-    std::vector<std::vector<TH1D *>> histsAmpByGammaAlpha_;
+    std::vector<std::vector<TH1D *>> histsAmpByGammaAlphaSg_;
+    std::vector<std::vector<TH1D *>> histsAmpByGammaAlphaBg_;
     std::vector<std::vector<TH1D *>> histsTimeByGammaAlpha_;
-    std::vector<TH1D *> histsAmpByAlpha_;
+
 
     std::vector<std::vector<TH1D *>> histsTimeCorrectedByGammaAlpha_;
     std::vector<TH1D *> histsTimeCorrectedByAlpha_;
+    std::vector<TH1D *> histsAmpByAlpha_;
 };
 
 #endif // HISTOGRAMMANAGER_H

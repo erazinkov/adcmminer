@@ -10,14 +10,24 @@
 
 HistogramManager::HistogramManager(const int &gammaNumber, const int &alphaNumber, std::optional<std::string> outputDirectory) : gammaNumber_{gammaNumber}, alphaNumber_{alphaNumber}, outputDirectory_{outputDirectory}
 {
-    histsAmpByGammaAlpha_.resize(gammaNumber_);
+    histsAmpByGammaAlphaSg_.resize(gammaNumber_);
     for (auto ig{0}; ig < gammaNumber_; ig++) {
-        histsAmpByGammaAlpha_[ig].resize(alphaNumber_);
+        histsAmpByGammaAlphaSg_[ig].resize(alphaNumber_);
         for (auto ia{0}; ia < alphaNumber_; ia++) {
-            std::string name{Form("hist_amp_by_gamma_%d_alpha_%d", ig, ia)};
-            std::string title{Form("hist_amp_by_gamma_%d_alpha_%d", ig, ia)};
+            std::string name{Form("hist_amp_by_gamma_sg_%d_alpha_%d", ig, ia)};
+            std::string title{Form("hist_amp_by_gamma_sg_%d_alpha_%d", ig, ia)};
             TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_CHANNEL, XLOW_CHANNEL, XUP_CHANNEL);
-            histsAmpByGammaAlpha_[ig][ia] = h;
+            histsAmpByGammaAlphaSg_[ig][ia] = h;
+        }
+    }
+    histsAmpByGammaAlphaBg_.resize(gammaNumber_);
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        histsAmpByGammaAlphaBg_[ig].resize(alphaNumber_);
+        for (auto ia{0}; ia < alphaNumber_; ia++) {
+            std::string name{Form("hist_amp_by_gamma_bg_%d_alpha_%d", ig, ia)};
+            std::string title{Form("hist_amp_by_gamma_bg_%d_alpha_%d", ig, ia)};
+            TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_CHANNEL, XLOW_CHANNEL, XUP_CHANNEL);
+            histsAmpByGammaAlphaBg_[ig][ia] = h;
         }
     }
     histsTimeByGammaAlpha_.resize(gammaNumber_);
@@ -60,8 +70,8 @@ HistogramManager::~HistogramManager()
 {
     for (auto ig{0}; ig < gammaNumber_; ig++) {
         for (auto ia{0}; ia < alphaNumber_; ia++) {
-            delete histsAmpByGammaAlpha_[ig][ia];
-            histsAmpByGammaAlpha_[ig][ia] = nullptr;
+            delete histsAmpByGammaAlphaSg_[ig][ia];
+            histsAmpByGammaAlphaSg_[ig][ia] = nullptr;
             delete histsTimeByGammaAlpha_[ig][ia];
             histsTimeByGammaAlpha_[ig][ia] = nullptr;
         }
@@ -273,7 +283,7 @@ void HistogramManager::saveToRootFile(const std::string &fileName, std::shared_p
 
 const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlpha() const
 {
-    return histsAmpByGammaAlpha_;
+    return histsAmpByGammaAlphaSg_;
 }
 
 const std::vector<std::vector<TH1D *> > &HistogramManager::histsTimeByGammaAlpha() const
@@ -294,4 +304,14 @@ const std::vector<std::vector<TH1D *> > &HistogramManager::histsTimeCorrectedByG
 const std::vector<TH1D *> &HistogramManager::histsTimeCorrectedByAlpha() const
 {
     return histsTimeCorrectedByAlpha_;
+}
+
+const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlphaSg() const
+{
+    return histsAmpByGammaAlphaSg_;
+}
+
+const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlphaBg() const
+{
+    return histsAmpByGammaAlphaBg_;
 }

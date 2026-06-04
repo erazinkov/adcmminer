@@ -67,6 +67,7 @@ void Worker::doDataDelegateWork(const QString &parameter)
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
         h = m_calibration->histogramManager->histsTimeCorrectedByAlpha()[i];
+//        h = m_calibration->histogramManager->histsAmpByAlpha()[i];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {
