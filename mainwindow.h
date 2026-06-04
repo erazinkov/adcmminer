@@ -7,6 +7,7 @@
 #include "filewatcher.h"
 #include "mainwidget.h"
 #include "controller.h"
+#include "constants.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,7 +27,7 @@ private slots:
     void newDataAmpByGamma(const QMap<QString, QList<QPointF>> &);
 
     void setupTimeCorrectedByAlpha();
-    void setupAmpByGamma();
+    void setupAmpByGamma(const int gammaNumber = AppConstants::MAX_GAMMA_NUMBER);
 
 private:
     Ui::MainWindow *ui;

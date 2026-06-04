@@ -5,21 +5,39 @@
 MainWidget::MainWidget(QWidget *parent)
     : QWidget{parent}
 {
+    setAttribute(Qt::WA_Hover);
+    installEventFilter(this);
     // Create chart view with the chart
+
+   setStyleSheet(
+        "QWidget {"
+        "    background-color: transparent;"
+        "    border: 1px solid #ddd;"
+        "    border-radius: 8px;"
+        "}"
+        "QWidget:hover {"
+        "    border: 1px solid #3498db;"
+        "    background-color: #f8f9fa;"
+        "}"
+    );
     m_chart = new QChart;
     m_chartView = new QChartView(m_chart, this);
+//    m_shadowEffect = new QGraphicsDropShadowEffect(this);
+//    m_shadowEffect->setBlurRadius(0);
+//    m_shadowEffect->setOffset(0, 0);
+//    m_shadowEffect->setColor(QColor::fromRgb(0, 255, 255));
+//    setGraphicsEffect(m_shadowEffect);
     QHBoxLayout *m_mainLayout = new QHBoxLayout(this);
     m_mainLayout->addWidget(m_chartView);
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
     // Set the title and show legend
-    m_chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
+    m_chart->setAnimationOptions(QChart::AnimationOption::NoAnimation);
 //    m_chart->setTitle("Legendmarker example (click on legend)");
     m_chart->legend()->setVisible(false);
 //    m_chart->legend()->setAlignment(Qt::AlignRight);
 
     m_chartView->setRenderHint(QPainter::Antialiasing);
-
 }
 
 

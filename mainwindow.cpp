@@ -8,7 +8,7 @@
 
 #include <Q3DSurface>
 
-#include "constants.h"
+
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -145,6 +145,9 @@ void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>>
 void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data)
 {
     qDebug() << "newDataAmpByGamma - received";
+    if (data.size() != m_dataAmpByGamma.size()) {
+        setupAmpByGamma(data.size());
+    }
     m_dataAmpByGamma.clear();
     for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
     {
@@ -214,28 +217,33 @@ void MainWindow::setupTimeCorrectedByAlpha()
     }
 }
 
-void MainWindow::setupAmpByGamma()
+void MainWindow::setupAmpByGamma(const int gammaNumber)
 {
+    if (m_page_2->layout()) {
+        delete m_page_2->layout();
+    }
+    for (auto i{0}; i < m_mainWidgetsAmpByGamma.size(); ++i) {
+        m_mainWidgetsAmpByGamma.at(i)->deleteLater();
+    }
     m_page_2->setLayout(new QGridLayout(m_page_2));
     static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
-    m_mainWidgetsAmpByGamma.resize(AppConstants::MAX_GAMMA_NUMBER);
-    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_GAMMA_NUMBER)))};
+    m_mainWidgetsAmpByGamma.resize(gammaNumber);
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(gammaNumber)))};
     auto index{0};
-    for (auto ir{0}; ir < cd; ++ir)
-    {
-        for (auto ic{0}; ic < cd; ++ic)
-        {
-            if (index < m_mainWidgetsAmpByGamma.size())
-            {
+    for (auto ir{0}; ir < cd; ++ir) {
+        for (auto ic{0}; ic < cd; ++ic) {
+            if (index < m_mainWidgetsAmpByGamma.size()) {
                 m_mainWidgetsAmpByGamma[index] = new MainWidget;
+                connect(m_mainWidgetsAmpByGamma[index], &MainWidget::hovered, [](QString title) {
+                    qDebug() << title;
+                });
                 static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_mainWidgetsAmpByGamma.at(index), ir, ic);
                 index++;
             }
         }
     }
-    for (auto i{0}; i < cd; ++i)
-    {
+    for (auto i{0}; i < cd; ++i) {
         static_cast<QGridLayout*>(m_page_2->layout())->setRowStretch(i, 1);
         static_cast<QGridLayout*>(m_page_2->layout())->setColumnStretch(i, 1);
     }

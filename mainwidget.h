@@ -25,6 +25,9 @@ class MainWidget : public QWidget
 public:
     explicit MainWidget(QWidget *parent = nullptr);
 
+signals:
+    void hovered(QString);
+
 public slots:
     void process(QList<QAbstractSeries *>);
     void setTitle(const QString &);
@@ -39,14 +42,25 @@ private slots:
 private:
 
     QChart *m_chart;
-
     QChartView *m_chartView;
 //    QGridLayout *m_mainLayout;
-
-
     MousePressEater *m_mousePressEater;
+//    QGraphicsDropShadowEffect *m_shadowEffect;
 
-
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override {
+        if (event->type() == QEvent::HoverEnter) {
+            qDebug() << "Hovered";
+//            m_shadowEffect->setBlurRadius(25);
+            emit hovered(m_chart->title());
+//            setStyleSheet("background-color: #e0e0e0;");
+        }
+        else if (event->type() == QEvent::HoverLeave) {
+//            m_shadowEffect->setBlurRadius(0);
+//            setStyleSheet("background-color: #f0f0f0;");
+        }
+        return QWidget::eventFilter(obj, event);
+    }
 
 };
 
