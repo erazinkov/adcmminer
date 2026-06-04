@@ -13,34 +13,7 @@ class HistogramManager
 public:
     HistogramManager(const int &gammaNumber, const int &alphaNumber, std::optional<std::string> outputDirectory = std::nullopt);
     ~HistogramManager();
-    std::vector<std::vector<std::shared_ptr<TH1>>> createHistograms(const std::string &histName,
-                                                                int nBinsX,
-                                                                double xLow,
-                                                                double xUp,
-                                                                std::vector<int> &idxsGamma,
-                                                                std::vector<int> &idxsAlpha) const;
-    std::vector<std::shared_ptr<TH1>> createHistograms(const std::string &histName,
-                                                                int nBinsX,
-                                                                double xLow,
-                                                                double xUp,
-                                                                std::vector<int> &idxs) const;
-    std::vector<std::vector<std::shared_ptr<TH2>>> createHistograms(const std::string &histName,
-                                                                int nBinsX,
-                                                                double xLow,
-                                                                double xUp,
-                                                                int nBinsY,
-                                                                double yLow,
-                                                                double yUp,
-                                                                std::vector<int> &idxsGamma,
-                                                                std::vector<int> &idxsAlpha) const;
-    std::vector<std::shared_ptr<TH2>> createHistograms(const std::string &histName,
-                                                                int nBinsX,
-                                                                double xLow,
-                                                                double xUp,
-                                                                int nBinsY,
-                                                                double yLow,
-                                                                double yUp,
-                                                                std::vector<int> &idxs) const;
+
     void printToPsFile(const std::string &psName,
                std::vector<std::vector<std::shared_ptr<TH1>> > &hists) const;
     void printToPsFile(const std::string &fileName,
@@ -63,6 +36,8 @@ public:
 
     const std::vector<std::vector<TH1D *> > &histsAmpByGammaAlphaBg() const;
 
+    const std::vector<TH1D *> &histsAmpByGamma() const;
+
 private:
     const int gammaNumber_;
     const int alphaNumber_;
@@ -82,12 +57,17 @@ private:
     std::optional<std::string> outputDirectory_;
     std::vector<std::vector<TH1D *>> histsAmpByGammaAlphaSg_;
     std::vector<std::vector<TH1D *>> histsAmpByGammaAlphaBg_;
+    std::vector<std::vector<TH1D *>> histsAmpByGammaAlphaRc_;
     std::vector<std::vector<TH1D *>> histsTimeByGammaAlpha_;
 
 
     std::vector<std::vector<TH1D *>> histsTimeCorrectedByGammaAlpha_;
     std::vector<TH1D *> histsTimeCorrectedByAlpha_;
+
     std::vector<TH1D *> histsAmpByAlpha_;
+
+    std::vector<TH1D *> histsAmpByGamma_;
+    std::vector<TH1D *> histsAmpByGammaRc_;
 };
 
 #endif // HISTOGRAMMANAGER_H

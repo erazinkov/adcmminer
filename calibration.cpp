@@ -9,6 +9,7 @@
 
 #include "utils.h"
 #include "constants.h"
+#include "peakfinder.h"
 
 Calibration::Calibration()
 {
@@ -46,10 +47,13 @@ void Calibration::process()
             timeCorrections_[p] = histogramManager->histsTimeByGammaAlpha().at(ig).at(ia)->GetBinCenter(histogramManager->histsTimeByGammaAlpha().at(ig).at(ia)->GetMaximumBin());
         }
     }
+
     fillHistsTimeByGammaAlpha(histogramManager->histsTimeCorrectedByGammaAlpha(), true);
+
     fillHistsAmpByGammaAlpha(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg());
 
-    fillHistsAmpByAlpha(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg());
+//    fillHistsAmpByAlpha(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg());
+    fillHistsAmpByGamma(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg());
     fillHistsTimeByAlpha(histogramManager->histsTimeCorrectedByGammaAlpha());
 }
 
@@ -147,6 +151,19 @@ void Calibration::fillHistsAmpByAlpha(const std::vector<std::vector<TH1D *>> &hi
         for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
             histogramManager->histsAmpByAlpha()[j]->Add(histsSg.at(i).at(j));
             histogramManager->histsAmpByAlpha()[j]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
+        }
+    }
+}
+
+void Calibration::fillHistsAmpByGamma(const std::vector<std::vector<TH1D *> > &histsSg, const std::vector<std::vector<TH1D *> > &histsBg)
+{
+    for (size_t i{0}; i <  histogramManager->histsAmpByGamma().size(); ++i) {
+        histogramManager->histsAmpByGamma()[i]->Reset();
+    }
+    for (size_t i{0}; i < histsSg.size(); ++i) {
+        for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
+            histogramManager->histsAmpByGamma()[i]->Add(histsSg.at(i).at(j));
+            histogramManager->histsAmpByGamma()[i]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
         }
     }
 }

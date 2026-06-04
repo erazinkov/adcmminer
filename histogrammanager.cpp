@@ -30,6 +30,18 @@ HistogramManager::HistogramManager(const int &gammaNumber, const int &alphaNumbe
             histsAmpByGammaAlphaBg_[ig][ia] = h;
         }
     }
+
+    histsAmpByGammaAlphaRc_.resize(gammaNumber_);
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        histsAmpByGammaAlphaRc_[ig].resize(alphaNumber_);
+        for (auto ia{0}; ia < alphaNumber_; ia++) {
+            std::string name{Form("hist_amp_by_gamma_rc_%d_alpha_%d", ig, ia)};
+            std::string title{Form("hist_amp_by_gamma_rc_%d_alpha_%d", ig, ia)};
+            TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_CHANNEL, XLOW_CHANNEL, XUP_CHANNEL);
+            histsAmpByGammaAlphaRc_[ig][ia] = h;
+        }
+    }
+
     histsTimeByGammaAlpha_.resize(gammaNumber_);
     for (auto ig{0}; ig < gammaNumber_; ig++) {
         histsTimeByGammaAlpha_[ig].resize(alphaNumber_);
@@ -40,6 +52,22 @@ HistogramManager::HistogramManager(const int &gammaNumber, const int &alphaNumbe
             histsTimeByGammaAlpha_[ig][ia] = h;
         }
     }
+
+    histsAmpByGamma_.resize(gammaNumber_);
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        std::string name{Form("hist_amp_by_gamma_%d", ig)};
+        std::string title{Form("hist_amp_by_gamma_%d", ig)};
+        TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_CHANNEL, XLOW_CHANNEL, XUP_CHANNEL);
+        histsAmpByGamma_[ig] = h;
+    }
+    histsAmpByGammaRc_.resize(gammaNumber_);
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        std::string name{Form("hist_amp_by_gamma_rc_%d", ig)};
+        std::string title{Form("hist_amp_by_gamma_rc_%d", ig)};
+        TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_CHANNEL, XLOW_CHANNEL, XUP_CHANNEL);
+        histsAmpByGammaRc_[ig] = h;
+    }
+
     histsAmpByAlpha_.resize(alphaNumber_);
     for (auto ia{0}; ia < alphaNumber_; ia++) {
         std::string name{Form("hist_amp_by_alpha_%d", ia)};
@@ -74,6 +102,8 @@ HistogramManager::~HistogramManager()
             histsAmpByGammaAlphaSg_[ig][ia] = nullptr;
             delete histsTimeByGammaAlpha_[ig][ia];
             histsTimeByGammaAlpha_[ig][ia] = nullptr;
+            delete histsAmpByGammaAlphaRc_[ig][ia];
+            histsAmpByGammaAlphaRc_[ig][ia] = nullptr;
         }
     }
     for (auto ia{0}; ia < alphaNumber_; ia++) {
@@ -82,98 +112,12 @@ HistogramManager::~HistogramManager()
             delete histsTimeCorrectedByAlpha_[ia];
             histsTimeCorrectedByAlpha_[ia] = nullptr;
     }
-}
-
-std::vector<std::vector<std::shared_ptr<TH1> > > HistogramManager::createHistograms(const std::string &histName,
-                                                                                    int nBinsX,
-                                                                                    double xLow,
-                                                                                    double xUp,
-                                                                                    std::vector<int> &idxsGamma,
-                                                                                    std::vector<int> &idxsAlpha) const
-{
-    std::vector<std::vector<std::shared_ptr<TH1>>> hists;
-    hists.resize(idxsGamma.size());
-    std::stringstream ss;
-    for (size_t i{0}; i < idxsGamma.size(); ++i)
-    {
-        for (size_t j{0}; j <  idxsAlpha.size(); ++j)
-        {
-            ss.clear();ss.str("");
-            ss << histName << "_" << idxsGamma.at(i) << "_" << idxsAlpha.at(j);
-            auto h{std::make_shared<TH1D>(ss.str().c_str(), ss.str().c_str(), nBinsX, xLow, xUp)};
-            h->Sumw2();
-            hists.at(i).push_back(h);
-        }
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+            delete histsAmpByGamma_[ig];
+            histsAmpByGamma_[ig] = nullptr;
+            delete histsAmpByGammaRc_[ig];
+            histsAmpByGammaRc_[ig] = nullptr;
     }
-    return hists;
-}
-
-std::vector<std::shared_ptr<TH1> > HistogramManager::createHistograms(const std::string &histName,
-                                                                      int nBinsX,
-                                                                      double xLow,
-                                                                      double xUp,
-                                                                      std::vector<int> &idxs) const
-{
-    std::vector<std::shared_ptr<TH1>> hists;
-    std::stringstream ss;
-    for (size_t i{0}; i < idxs.size(); ++i)
-    {
-        ss.clear();ss.str("");
-        ss << histName << "_" << idxs.at(i);
-        auto h{std::make_shared<TH1D>(ss.str().c_str(), ss.str().c_str(), nBinsX, xLow, xUp)};
-        h->Sumw2();
-        hists.push_back(h);
-    }
-    return hists;
-}
-
-std::vector<std::vector<std::shared_ptr<TH2> > > HistogramManager::createHistograms(const std::string &histName,
-                                                                                    int nBinsX,
-                                                                                    double xLow,
-                                                                                    double xUp,
-                                                                                    int nBinsY,
-                                                                                    double yLow,
-                                                                                    double yUp,
-                                                                                    std::vector<int> &idxsGamma,
-                                                                                    std::vector<int> &idxsAlpha) const
-{
-    std::vector<std::vector<std::shared_ptr<TH2>>> hists;
-    hists.resize(idxsGamma.size());
-    std::stringstream ss;
-    for (size_t i{0}; i < idxsGamma.size(); ++i)
-    {
-        for (size_t j{0}; j <  idxsAlpha.size(); ++j)
-        {
-            ss.clear();ss.str("");
-            ss << histName << "_" << idxsGamma.at(i) << "_" << idxsAlpha.at(j);
-            auto h{std::make_shared<TH2D>(ss.str().c_str(), ss.str().c_str(), nBinsX, xLow, xUp, nBinsY, yLow, yUp)};
-            h->Sumw2();
-            hists.at(i).push_back(h);
-        }
-    }
-    return hists;
-}
-
-std::vector<std::shared_ptr<TH2> > HistogramManager::createHistograms(const std::string &histName,
-                                                                      int nBinsX,
-                                                                      double xLow,
-                                                                      double xUp,
-                                                                      int nBinsY,
-                                                                      double yLow,
-                                                                      double yUp,
-                                                                      std::vector<int> &idxs) const
-{
-    std::vector<std::shared_ptr<TH2>> hists;
-    std::stringstream ss;
-    for (size_t i{0}; i < idxs.size(); ++i)
-    {
-        ss.clear();ss.str("");
-        ss << histName << "_" << idxs.at(i);
-        auto h{std::make_shared<TH2D>(ss.str().c_str(), ss.str().c_str(), nBinsX, xLow, xUp, nBinsY, yLow, yUp)};
-        h->Sumw2();
-        hists.push_back(h);
-    }
-    return hists;
 }
 
 void HistogramManager::printToPsFile(const std::string &fileName,
@@ -314,4 +258,9 @@ const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlphaS
 const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlphaBg() const
 {
     return histsAmpByGammaAlphaBg_;
+}
+
+const std::vector<TH1D *> &HistogramManager::histsAmpByGamma() const
+{
+    return histsAmpByGamma_;
 }

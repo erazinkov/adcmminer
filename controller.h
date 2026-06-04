@@ -15,7 +15,8 @@ public:
     ~Controller() override;
 //public slots:
 signals:
-    void handleResults(const QMap<QString, QList<QPointF>> &);
+    void handleResultsTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
+    void handleResultsAmpByGamma(const QMap<QString, QList<QPointF>> &);
 signals:
     void operateS();
 };

@@ -21,7 +21,9 @@ SOURCES += \
     mainwindow.cpp \
     mousepresseater.cpp \
     worker.cpp \
-    histogrammanager.cpp
+    histogrammanager.cpp \
+    peakfinder.cpp \
+    energypeak.cpp
 
 INCLUDEPATH += $$system(root-config --incdir)
 LIBS += $$system(root-config --libs) -lMinuit -lSpectrum
@@ -41,7 +43,9 @@ HEADERS += \
     mousepresseater.h \
     utils.h \
     worker.h \
-    histogrammanager.h
+    histogrammanager.h \
+    peakfinder.h \
+    energypeak.h
 
 FORMS += \
     mainwindow.ui

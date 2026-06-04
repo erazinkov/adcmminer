@@ -40,34 +40,30 @@ void Worker::doWorkS()
     stop = std::chrono::steady_clock::now();
     std::cout << "process Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     start = std::chrono::steady_clock::now();
-    doDataDelegateWork("");
+    histToPointsTimeCorrectedByAlpha();
+    histToPointsAmpByGamma();
     stop = std::chrono::steady_clock::now();
     std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
 }
 
-QVector<QPointF> histogramToPoints(TH1D *hist) {
+QVector<QPointF> Worker::histToPoints(TH1D *hist) {
     QVector<QPointF> points;
-
     if (!hist) return points;
-
-    // Loop over bins (1 to Nbins, ignoring underflow/overflow)
     for (int bin = 1; bin <= hist->GetNbinsX(); ++bin) {
-        double x = hist->GetBinCenter(bin);  // X coordinate (bin center)
-        double y = hist->GetBinContent(bin); // Y coordinate (bin value)
+        double x = hist->GetBinCenter(bin);
+        double y = hist->GetBinContent(bin);
         points.append(QPointF(x, y));
     }
-
     return points;
 }
 
-void Worker::doDataDelegateWork(const QString &parameter)
+void Worker::histToPointsTimeCorrectedByAlpha()
 {
 
     QMap<QString, QList<QPointF>> data;
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
         h = m_calibration->histogramManager->histsTimeCorrectedByAlpha()[i];
-//        h = m_calibration->histogramManager->histsAmpByAlpha()[i];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {
@@ -75,19 +71,23 @@ void Worker::doDataDelegateWork(const QString &parameter)
         }
         h = nullptr;
     }
-//    for (ulong i{0}; i < m_decoder->channels().g.size(); ++i)
-//    {
-//        qDebug() << m_calibration->histsAmp().size();
-//        TH1 *h;
-//        h = m_calibration->histsAmp()[i][4];
-//        m_dataDelegate->histToData(h);
-//        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
-//        {
-//            data.insert(j.key(), j.value());
-//        }
-//    }
+    emit resultReadyTimeCorrectedByAlpha(data);
+}
 
-    emit resultReady(data);
+void Worker::histToPointsAmpByGamma()
+{
+    QMap<QString, QList<QPointF>> data;
+    for (ulong i{0}; i < m_decoder->channels().g.size(); ++i) {
+        TH1 *h;
+        h = m_calibration->histogramManager->histsAmpByGamma()[i];
+        m_dataDelegate->histToData(h);
+        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
+        {
+            data.insert(j.key(), j.value());
+        }
+    }
+
+    emit resultReadyAmpByGamma(data);
 }
 
 //    void Worker::doDataDelegateWork(const QString &parameter)

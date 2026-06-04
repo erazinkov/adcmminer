@@ -19,9 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *widget = new QWidget;
     m_mainLayout = new QHBoxLayout(widget);
     setCentralWidget(widget);
-//    m_path = "/home/egor/shares/tmp/c12_2kg_mask_1";
-//    m_path = "/home/egor/shares/tmp/adcm.dat.test_0_180";
-//    m_path = "/misc/agpk_std/adcm.dat";
+
     m_path = "/home/egor/build-adcmemulate-Desktop-Debug/adcm.dat";
     m_fileWatcher = new FileWatcher(m_path);
     m_fileWatcher->moveToThread(&workerThread);
@@ -30,17 +28,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_controller = new Controller(m_path);
 
-
-    m_pushButton = new QPushButton("Button", this);
+    m_pushButton = new QPushButton("Start", this);
     m_pushButton->setCheckable(true);
 
     m_pushButton1 = new QPushButton("Button1", this);
 
-    m_comboBox = new QComboBox(this);
-    m_comboBox->insertItems(0, {"4", "16", "32", "64"});
-    m_comboBox->setCurrentIndex(0);
 
-    m_label = new QLabel("Channels:", this);
 
     m_widgetLeft = new QWidget(widget);
     m_widgetRight = new QWidget(widget);
@@ -50,28 +43,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_gLleft->addWidget(m_pushButton, 0, 0);
     m_gLleft->addWidget(m_pushButton1, 0, 1);
-    m_gLleft->addWidget(m_label, 1, 0);
-    m_gLleft->addWidget(m_comboBox, 1, 1);
 
     m_tabWidget = new QTabWidget(m_widgetRight);
     m_page_1 = new QWidget;
-    m_tabWidget->addTab(m_page_1, "Tab &One");
+    m_tabWidget->addTab(m_page_1, "TimeByAlpha");
+    m_page_2 = new QWidget;
+    m_tabWidget->addTab(m_page_2, "AmpByGamma");
     m_mainLayout->addWidget(m_widgetLeft);
     m_mainLayout->addWidget(m_tabWidget);
 
 
-
-//    m_flowLayout = new FlowLayout(m_page_1);
-
-//    QVBoxLayout *layout = new QVBoxLayout;
-//    layout->setContentsMargins(5, 5, 5, 5);
-//    layout->addWidget(topFiller);
-//    layout->addLayout(m_mainLayout, 1);
-//    layout->addWidget(bottomFiller);
-//    widget->setLayout(m_mainLayout);
-
-    connect(m_comboBox, &QComboBox::currentTextChanged, this, &MainWindow::onCurrentTextChanged);
-    connect(m_controller, &Controller::handleResults, this, &MainWindow::newData);
+    connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
+    connect(m_controller, &Controller::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
     connect(&workerThread, &QThread::finished, m_fileWatcher, &QObject::deleteLater);
     connect(m_fileWatcherTimer, &QTimer::timeout, m_fileWatcher, &FileWatcher::operate);
 
@@ -82,12 +65,11 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     connect(m_pushButton, &QPushButton::toggled, [this](bool checked){
-        if (checked)
-        {
+        if (checked) {
+            m_pushButton->setText("Stop");
             m_fileWatcherTimer->start();
-        }
-        else
-        {
+        } else {
+            m_pushButton->setText("Start");
             m_fileWatcherTimer->stop();
         }
     });
@@ -100,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
     workerThread.start();
 
     setupTimeCorrectedByAlpha();
+    setupAmpByGamma();
 
 //    onCurrentTextChanged(m_comboBox->currentText());
 }
@@ -114,17 +97,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
+void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data)
 {
-    qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-    m_data.clear();
+    qDebug() << "newDataTimeCorrectedByAlpha - received";
+    m_dataTimeCorrectedByAlpha.clear();
     for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
     {
-        m_data.insert(i.key(), i.value());
+        m_dataTimeCorrectedByAlpha.insert(i.key(), i.value());
     }
-    m_series.clear();
+    m_seriesTimeCorrectesByAlpha.clear();
     auto dataColor{QColor::fromRgb(0, 255, 255)};
-    for (auto i = m_data.cbegin(), end = m_data.cend(); i != end; ++i)
+    for (auto i = m_dataTimeCorrectedByAlpha.cbegin(), end = m_dataTimeCorrectedByAlpha.cend(); i != end; ++i)
     {
         QLineSeries *series = new QLineSeries();
         series->append(i.value());
@@ -143,13 +126,13 @@ void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
         areaSeries->setBrush(dataGradient);
         areaSeries->setColor(dataColor);
         areaSeries->setName(i.key());
-        m_series.append(areaSeries);
+        m_seriesTimeCorrectesByAlpha.append(areaSeries);
     }
 
-    for (auto i{0}; i < std::min(m_series.size(), m_mainWidgetsTimeCorrectedByAlpha.size()); ++i)
+    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_mainWidgetsTimeCorrectedByAlpha.size()); ++i)
     {
-        m_mainWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_series.at(i)->name());
-        m_mainWidgetsTimeCorrectedByAlpha.at(i)->process({m_series.at(i)});
+        m_mainWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
+        m_mainWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
     }
 
 //    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
@@ -159,11 +142,17 @@ void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
 //    }
 }
 
-void MainWindow::newDataShow()
+void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data)
 {
-    m_series.clear();
+    qDebug() << "newDataAmpByGamma - received";
+    m_dataAmpByGamma.clear();
+    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
+    {
+        m_dataAmpByGamma.insert(i.key(), i.value());
+    }
+    m_seriesAmpByGamma.clear();
     auto dataColor{QColor::fromRgb(0, 255, 255)};
-    for (auto i = m_data.cbegin(), end = m_data.cend(); i != end; ++i)
+    for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
     {
         QLineSeries *series = new QLineSeries();
         series->append(i.value());
@@ -182,77 +171,20 @@ void MainWindow::newDataShow()
         areaSeries->setBrush(dataGradient);
         areaSeries->setColor(dataColor);
         areaSeries->setName(i.key());
-        m_series.append(areaSeries);
+        m_seriesAmpByGamma.append(areaSeries);
     }
-//    for (auto i = m_data.cbegin(), end = m_data.cend(); i != end; ++i)
-//    {
-//        QSplineSeries *series = new QSplineSeries();
-//        series->append(i.value());
-//        series->setMarkerSize(2.5);
-//        series->setColor(Qt::black);
-//        series->setName(i.key());
-//        m_series.append(series);
-//    }
-    for (auto i{0}; i < std::min(m_series.size(), m_mainWidgetList.size()); ++i)
+
+    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_mainWidgetsAmpByGamma.size()); ++i)
     {
-        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-        m_mainWidgetList.at(i)->process({m_series.at(i)});
+        m_mainWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
+        m_mainWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
     }
-}
-
-void MainWindow::onCurrentTextChanged(const QString &currentText)
-{
-//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
-//    {
-//        m_flowLayout->removeWidget(m_mainWidgetList.at(i));
-//        m_mainWidgetList.at(i)->deleteLater();
-//    }
-
-//    m_mainWidgetList.resize(static_cast<qsizetype>(currentText.toInt()));
 
 //    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
 //    {
-//        m_mainWidgetList[i] = new MainWidget;
-//        m_flowLayout->addWidget(m_mainWidgetList.at(i));
+//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
+//        m_mainWidgetList.at(i)->process({m_series.at(i)});
 //    }
-
-
-    if (m_page_1->layout())
-    {
-        delete m_page_1->layout();
-    }
-    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
-    {
-        m_mainWidgetList.at(i)->deleteLater();
-    }
-
-    m_page_1->setLayout(new QGridLayout(m_page_1));
-    static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
-    static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
-
-    m_mainWidgetList.resize(static_cast<qsizetype>(currentText.toInt()));
-    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(static_cast<qsizetype>(currentText.toInt()))))};
-    auto index{0};
-    for (auto ir{0}; ir < cd; ++ir)
-    {
-        for (auto ic{0}; ic < cd; ++ic)
-        {
-            if (index < m_mainWidgetList.size())
-            {
-                m_mainWidgetList[index] = new MainWidget;
-                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_mainWidgetList.at(index), ir, ic);
-                index++;
-            }
-        }
-    }
-    for (auto i{0}; i < cd; ++i)
-    {
-        static_cast<QGridLayout*>(m_page_1->layout())->setRowStretch(i, 1);
-        static_cast<QGridLayout*>(m_page_1->layout())->setColumnStretch(i, 1);
-    }
-
-
-
 }
 
 void MainWindow::setupTimeCorrectedByAlpha()
@@ -280,10 +212,32 @@ void MainWindow::setupTimeCorrectedByAlpha()
         static_cast<QGridLayout*>(m_page_1->layout())->setRowStretch(i, 1);
         static_cast<QGridLayout*>(m_page_1->layout())->setColumnStretch(i, 1);
     }
-//    for (auto i{0}; i < m_mainWidgetsTimeCorrectedByAlpha.size(); ++i) {
-//        m_mainWidgetsTimeCorrectedByAlpha[i] = new MainWidget;
-//        m_page_1->layout()->addWidget(m_mainWidgetsTimeCorrectedByAlpha.at(i));
-////        m_flowLayout->addWidget(m_mainWidgetsTimeCorrectedByAlpha.at(i));
-//    }
+}
+
+void MainWindow::setupAmpByGamma()
+{
+    m_page_2->setLayout(new QGridLayout(m_page_2));
+    static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
+    static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
+    m_mainWidgetsAmpByGamma.resize(AppConstants::MAX_GAMMA_NUMBER);
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_GAMMA_NUMBER)))};
+    auto index{0};
+    for (auto ir{0}; ir < cd; ++ir)
+    {
+        for (auto ic{0}; ic < cd; ++ic)
+        {
+            if (index < m_mainWidgetsAmpByGamma.size())
+            {
+                m_mainWidgetsAmpByGamma[index] = new MainWidget;
+                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_mainWidgetsAmpByGamma.at(index), ir, ic);
+                index++;
+            }
+        }
+    }
+    for (auto i{0}; i < cd; ++i)
+    {
+        static_cast<QGridLayout*>(m_page_2->layout())->setRowStretch(i, 1);
+        static_cast<QGridLayout*>(m_page_2->layout())->setColumnStretch(i, 1);
+    }
 }
 

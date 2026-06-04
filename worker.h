@@ -29,15 +29,17 @@ public slots:
     void doWorkS();
 
 signals:
-    void resultReady(const QMap<QString, QList<QPointF>> &);
+    void resultReadyTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
+    void resultReadyAmpByGamma(const QMap<QString, QList<QPointF>> &);
 private:
     Decoder *m_decoder;
     DataDelegate *m_dataDelegate;
     Calibration *m_calibration;
-    std::vector<dec_ev_t> m_data;
 
-    void doDataDelegateWork(const QString &parameter);
+    void histToPointsTimeCorrectedByAlpha();
+    void histToPointsAmpByGamma();
 
+    QVector<QPointF> histToPoints(TH1D *hist);
 };
 
 #endif // WORKER_H

@@ -13,6 +13,9 @@
 #include <cstdint>
 #include <map>
 
+#include "timepeaksfinder.h"
+#include "energypeak.h"
+
 class Calibration
 {
 public:
@@ -44,6 +47,8 @@ private:
     std::vector<std::vector<TH1 *>> _hists;
     std::vector<std::vector<TH1 *>> _histsAmp;
     std::vector<TH1 *> _histsAmpPoGamma;
+    std::unique_ptr<TimePeaksFinder> timePeaksFinder_; // TODO
+    std::vector<std::vector<EnergyPeak>>  energyPeaks_;
 
     std::vector<dec_ev_t> selectedEvents(uint8_t ig, u_int8_t ia);
     void fillHistsTimeByGammaAlpha(const std::vector<std::vector<TH1D *>> &hists, bool isCorrected = false);
@@ -53,6 +58,8 @@ private:
     void fillHistsAmpByGammaAlpha(const std::vector<std::vector<TH1D *> > &histsSg, const std::vector<std::vector<TH1D *> > &histsBg);
     void fillHistAmp(const std::vector<dec_ev_m_t> &events, TH1 *h, double minT, double maxT);
     void fillHistsAmpByAlpha(const std::vector<std::vector<TH1D *>> &histsSg, const std::vector<std::vector<TH1D *> > &histsBg);
+
+    void fillHistsAmpByGamma(const std::vector<std::vector<TH1D *>> &histsSg, const std::vector<std::vector<TH1D *> > &histsBg);
 
     void fillHists(const std::vector<std::vector<TH1D *>> &hists);
     void fillHist(const std::vector<dec_ev_m_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event));
