@@ -92,18 +92,53 @@ HistogramManager::HistogramManager(const int &gammaNumber, const int &alphaNumbe
         TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_TIME, XLOW_TIME, XUP_TIME);
         histsTimeCorrectedByAlpha_[ia] = h;
     }
+
+    histsEnergyByGammaAlphaSg_.resize(gammaNumber_);
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        histsEnergyByGammaAlphaSg_[ig].resize(alphaNumber_);
+        for (auto ia{0}; ia < alphaNumber_; ia++) {
+            std::string name{Form("hist_energy_by_gamma_sg_%d_alpha_%d", ig, ia)};
+            std::string title{Form("hist_energy_by_gamma_sg_%d_alpha_%d", ig, ia)};
+            TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_ENERGY, XLOW_ENERGY, XUP_ENERGY);
+            histsEnergyByGammaAlphaSg_[ig][ia] = h;
+        }
+    }
+    histsEnergyByGammaAlphaBg_.resize(gammaNumber_);
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        histsEnergyByGammaAlphaBg_[ig].resize(alphaNumber_);
+        for (auto ia{0}; ia < alphaNumber_; ia++) {
+            std::string name{Form("hist_energy_by_gamma_bg_%d_alpha_%d", ig, ia)};
+            std::string title{Form("hist_energy_by_gamma_bg_%d_alpha_%d", ig, ia)};
+            TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_ENERGY, XLOW_ENERGY, XUP_ENERGY);
+            histsEnergyByGammaAlphaBg_[ig][ia] = h;
+        }
+    }
+    histsEnergyByGamma_.resize(gammaNumber_);
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        std::string name{Form("hist_energy_by_gamma_%d", ig)};
+        std::string title{Form("hist_energy_by_gamma_%d", ig)};
+        TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_ENERGY, XLOW_ENERGY, XUP_ENERGY);
+        histsEnergyByGamma_[ig] = h;
+    }
 }
 
 HistogramManager::~HistogramManager()
 {
     for (auto ig{0}; ig < gammaNumber_; ig++) {
         for (auto ia{0}; ia < alphaNumber_; ia++) {
-            delete histsAmpByGammaAlphaSg_[ig][ia];
-            histsAmpByGammaAlphaSg_[ig][ia] = nullptr;
             delete histsTimeByGammaAlpha_[ig][ia];
             histsTimeByGammaAlpha_[ig][ia] = nullptr;
+
+            delete histsAmpByGammaAlphaSg_[ig][ia];
+            histsAmpByGammaAlphaSg_[ig][ia] = nullptr;
+            delete histsAmpByGammaAlphaBg_[ig][ia];
+            histsAmpByGammaAlphaBg_[ig][ia] = nullptr;
             delete histsAmpByGammaAlphaRc_[ig][ia];
             histsAmpByGammaAlphaRc_[ig][ia] = nullptr;
+            delete histsEnergyByGammaAlphaSg_[ig][ia];
+            histsEnergyByGammaAlphaSg_[ig][ia] = nullptr;
+            delete histsEnergyByGammaAlphaBg_[ig][ia];
+            histsEnergyByGammaAlphaBg_[ig][ia] = nullptr;
         }
     }
     for (auto ia{0}; ia < alphaNumber_; ia++) {
@@ -117,6 +152,9 @@ HistogramManager::~HistogramManager()
             histsAmpByGamma_[ig] = nullptr;
             delete histsAmpByGammaRc_[ig];
             histsAmpByGammaRc_[ig] = nullptr;
+
+            delete histsEnergyByGamma_[ig];
+            histsEnergyByGamma_[ig] = nullptr;
     }
 }
 
@@ -263,4 +301,29 @@ const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlphaB
 const std::vector<TH1D *> &HistogramManager::histsAmpByGamma() const
 {
     return histsAmpByGamma_;
+}
+
+const std::vector<TH1D *> &HistogramManager::histsAmpByGammaRc() const
+{
+    return histsAmpByGammaRc_;
+}
+
+const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlphaRc() const
+{
+    return histsAmpByGammaAlphaRc_;
+}
+
+const std::vector<std::vector<TH1D *> > &HistogramManager::histsEnergyByGammaAlphaSg() const
+{
+    return histsEnergyByGammaAlphaSg_;
+}
+
+const std::vector<std::vector<TH1D *> > &HistogramManager::histsEnergyByGammaAlphaBg() const
+{
+    return histsEnergyByGammaAlphaBg_;
+}
+
+const std::vector<TH1D *> &HistogramManager::histsEnergyByGamma() const
+{
+    return histsEnergyByGamma_;
 }

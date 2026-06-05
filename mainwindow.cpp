@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *widget = new QWidget;
     m_mainLayout = new QHBoxLayout(widget);
     setCentralWidget(widget);
-
+    m_dialog = nullptr;
     m_path = "/home/egor/build-adcmemulate-Desktop-Debug/adcm.dat";
     m_fileWatcher = new FileWatcher(m_path);
     m_fileWatcher->moveToThread(&workerThread);
@@ -129,10 +129,10 @@ void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>>
         m_seriesTimeCorrectesByAlpha.append(areaSeries);
     }
 
-    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_mainWidgetsTimeCorrectedByAlpha.size()); ++i)
+    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_chartWidgetsTimeCorrectedByAlpha.size()); ++i)
     {
-        m_mainWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
-        m_mainWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
+        m_chartWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
+        m_chartWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
     }
 
 //    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
@@ -177,10 +177,10 @@ void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data)
         m_seriesAmpByGamma.append(areaSeries);
     }
 
-    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_mainWidgetsAmpByGamma.size()); ++i)
+    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
     {
-        m_mainWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
-        m_mainWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
+        m_chartWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
+        m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
     }
 
 //    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
@@ -195,17 +195,17 @@ void MainWindow::setupTimeCorrectedByAlpha()
     m_page_1->setLayout(new QGridLayout(m_page_1));
     static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
-    m_mainWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
+    m_chartWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
     auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_ALPHA_NUMBER)))};
     auto index{0};
     for (auto ir{0}; ir < cd; ++ir)
     {
         for (auto ic{0}; ic < cd; ++ic)
         {
-            if (index < m_mainWidgetsTimeCorrectedByAlpha.size())
+            if (index < m_chartWidgetsTimeCorrectedByAlpha.size())
             {
-                m_mainWidgetsTimeCorrectedByAlpha[index] = new MainWidget;
-                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_mainWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
+                m_chartWidgetsTimeCorrectedByAlpha[index] = new ChartWidget;
+                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_chartWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
                 index++;
             }
         }
@@ -222,23 +222,21 @@ void MainWindow::setupAmpByGamma(const int gammaNumber)
     if (m_page_2->layout()) {
         delete m_page_2->layout();
     }
-    for (auto i{0}; i < m_mainWidgetsAmpByGamma.size(); ++i) {
-        m_mainWidgetsAmpByGamma.at(i)->deleteLater();
+    for (auto i{0}; i < m_chartWidgetsAmpByGamma.size(); ++i) {
+        m_chartWidgetsAmpByGamma.at(i)->deleteLater();
     }
     m_page_2->setLayout(new QGridLayout(m_page_2));
     static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
-    m_mainWidgetsAmpByGamma.resize(gammaNumber);
+    m_chartWidgetsAmpByGamma.resize(gammaNumber);
     auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(gammaNumber)))};
     auto index{0};
     for (auto ir{0}; ir < cd; ++ir) {
         for (auto ic{0}; ic < cd; ++ic) {
-            if (index < m_mainWidgetsAmpByGamma.size()) {
-                m_mainWidgetsAmpByGamma[index] = new MainWidget;
-                connect(m_mainWidgetsAmpByGamma[index], &MainWidget::hovered, [](QString title) {
-                    qDebug() << title;
-                });
-                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_mainWidgetsAmpByGamma.at(index), ir, ic);
+            if (index < m_chartWidgetsAmpByGamma.size()) {
+                m_chartWidgetsAmpByGamma[index] = new ChartWidget;
+//                connect(m_chartWidgetsAmpByGamma[index], &ChartWidget::hovered, this, &MainWindow::showDialog);
+                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_chartWidgetsAmpByGamma.at(index), ir, ic);
                 index++;
             }
         }
@@ -248,4 +246,33 @@ void MainWindow::setupAmpByGamma(const int gammaNumber)
         static_cast<QGridLayout*>(m_page_2->layout())->setColumnStretch(i, 1);
     }
 }
+
+
+void MainWindow::showDialog(QString title) {
+            qDebug() << "showDialog" << title;
+            if (m_dialog) return;  // Dialog already exists
+            qDebug() << "showDialog 1" << title;
+            m_dialog = new QDialog(this);
+            m_dialog->setWindowTitle("Information");
+            m_dialog->setModal(false);
+            m_dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+            QVBoxLayout *layout = new QVBoxLayout(m_dialog);
+            QLabel *label = new QLabel("You hovered long enough!");
+            label->setAlignment(Qt::AlignCenter);
+
+            QPushButton *closeBtn = new QPushButton("Close");
+            connect(closeBtn, &QPushButton::clicked, m_dialog, &QDialog::close);
+
+            layout->addWidget(label);
+            layout->addWidget(closeBtn);
+
+            m_dialog->show();
+
+            // Connect close signal to cleanup
+            connect(m_dialog, &QDialog::finished, this, [this]() {
+                m_dialog = nullptr;
+            });
+       }
+
 

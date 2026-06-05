@@ -55,11 +55,15 @@ private:
     void fillHistTime(const std::vector<dec_ev_m_t> &events, TH1 *h, double correction);
     void fillHistsTimeByAlpha(const std::vector<std::vector<TH1D *>> &hists);
 
-    void fillHistsAmpByGammaAlpha(const std::vector<std::vector<TH1D *> > &histsSg, const std::vector<std::vector<TH1D *> > &histsBg);
-    void fillHistAmp(const std::vector<dec_ev_m_t> &events, TH1 *h, double minT, double maxT);
+    void fillHistsAmpByGammaAlpha(const std::vector<std::vector<TH1D *> > &histsSg,
+                                  const std::vector<std::vector<TH1D *> > &histsBg,
+                                  const std::vector<std::vector<TH1D *> > &histsRc);
+    void fillHistAmp(const std::vector<dec_ev_m_t> &events, TH1 *h, double minT, double maxT, bool exclude);
     void fillHistsAmpByAlpha(const std::vector<std::vector<TH1D *>> &histsSg, const std::vector<std::vector<TH1D *> > &histsBg);
 
-    void fillHistsAmpByGamma(const std::vector<std::vector<TH1D *>> &histsSg, const std::vector<std::vector<TH1D *> > &histsBg);
+    void fillHistsAmpByGamma(const std::vector<std::vector<TH1D *> > &histsSg,
+                             const std::vector<std::vector<TH1D *> > &histsBg,
+                             const std::vector<std::vector<TH1D *> > &histsRc);
 
     void fillHists(const std::vector<std::vector<TH1D *>> &hists);
     void fillHist(const std::vector<dec_ev_m_t> &events, TH1 *h, double(Calibration::*f)(const dec_ev_t &event));

@@ -11,41 +11,41 @@ PeakFinder::PeakFinder(const u_int8_t gammaNumber) : calib_{1.0}, offset_{0.0}
     energyPeaks_.resize(gammaNumber);
 }
 
-void PeakFinder::process(std::vector<TH1 *> &histsSg, std::vector<TH1 *> &histsBg)
+void PeakFinder::process(const std::vector<TH1D *> &hists, const std::vector<TH1D *> &histsRc)
 {
     TVirtualFitter::SetDefaultFitter("Minuit");
 
     for (size_t i{0}; i < energyPeaks_.size(); ++i)
     {
         TGraphErrors graphPolN(5);
-        auto fe847PosApprox{getFerrum847PosApprox(histsBg.at(i), 0.12)};
+        auto fe847PosApprox{getFerrum847PosApprox(histsRc.at(i), 0.12)};
 
         offset_ = 0.0;
         calib_ = (847.0 - offset_) / fe847PosApprox;
-        auto fe847Pos{getFerrum847Pos(histsBg.at(i))};
+        auto fe847Pos{getFerrum847Pos(histsRc.at(i))};
         energyPeaks_.at(i).push_back(EnergyPeak(EnergyPeak::Id::FE847, fe847Pos));
         graphPolN.SetPoint(0, fe847Pos, 847.0);
         calib_  = (847.0 - offset_) / fe847Pos;
-        auto fe1238Pos{getFerrum1238Pos(histsBg.at(i))};
+        auto fe1238Pos{getFerrum1238Pos(histsRc.at(i))};
         energyPeaks_.at(i).push_back(EnergyPeak(EnergyPeak::Id::FE1238, fe1238Pos));
         graphPolN.SetPoint(1, fe1238Pos, 1238.0);
 
-        auto hydPos{getHydrogenPos(histsBg.at(i))};
+        auto hydPos{getHydrogenPos(histsRc.at(i))};
         energyPeaks_.at(i).push_back(EnergyPeak(EnergyPeak::Id::HYDROGEN, hydPos));
         graphPolN.SetPoint(2, hydPos, 2223.0);
         calib_  = (2223.0 - offset_) / hydPos;
         TF1 fApp("fApp", "pol2", 0.0, 8.0e3);
         graphPolN.Fit(&fApp, "RQ0");
-        auto carbonPos{getCarbonPos(histsSg.at(i), fApp.GetX(4438.0))};
+        auto carbonPos{getCarbonPos(hists.at(i), fApp.GetX(4438.0))};
         energyPeaks_.at(i).push_back(EnergyPeak(EnergyPeak::Id::CARBON, carbonPos));
         graphPolN.SetPoint(3, carbonPos, 4438.0);
         calib_  = (4438.0 - offset_) / carbonPos;
         graphPolN.Fit(&fApp, "RQ0");
-        auto oxygenPos{getOxygenPos(histsSg.at(i), fApp.GetX(6129.0))};
+        auto oxygenPos{getOxygenPos(hists.at(i), fApp.GetX(6129.0))};
         energyPeaks_.at(i).push_back(EnergyPeak(EnergyPeak::Id::OXYGEN, oxygenPos));
         graphPolN.SetPoint(4, oxygenPos, 6129.0);
         calib_  = (6129.0 - offset_) / oxygenPos;
-        auto fe7631Pos{getFerrum7631Pos(histsBg.at(i), 0.0)};
+        auto fe7631Pos{getFerrum7631Pos(histsRc.at(i), 0.0)};
         energyPeaks_.at(i).push_back(EnergyPeak(EnergyPeak::Id::FE7631, fe7631Pos));
     }
 
@@ -56,15 +56,15 @@ void PeakFinder::process(std::vector<TH1 *> &histsSg, std::vector<TH1 *> &histsB
     for (size_t i{0}; i < energyPeaks_.size(); ++i)
     {
         c.get()->cd(1);
-        histsSg.at(i)->Draw();
-        auto listOfFunctionsSg{histsSg.at(i)->GetListOfFunctions()};
+        hists.at(i)->Draw();
+        auto listOfFunctionsSg{hists.at(i)->GetListOfFunctions()};
         for (auto *item : *listOfFunctionsSg)
         {
             item->Draw("SAME");
         }
         c.get()->cd(2);
-        histsBg.at(i)->Draw();
-        auto listOfFunctionsRc{histsBg.at(i)->GetListOfFunctions()};
+        histsRc.at(i)->Draw();
+        auto listOfFunctionsRc{histsRc.at(i)->GetListOfFunctions()};
         for (auto *item : *listOfFunctionsRc)
         {
             item->Draw("SAME");

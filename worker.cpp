@@ -79,7 +79,7 @@ void Worker::histToPointsAmpByGamma()
     QMap<QString, QList<QPointF>> data;
     for (ulong i{0}; i < m_decoder->channels().g.size(); ++i) {
         TH1 *h;
-        h = m_calibration->histogramManager->histsAmpByGamma()[i];
+        h = m_calibration->histogramManager->histsAmpByGammaRc()[i];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {

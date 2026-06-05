@@ -5,7 +5,7 @@
 #include <QThread>
 
 #include "filewatcher.h"
-#include "mainwidget.h"
+#include "chartwidget.h"
 #include "controller.h"
 #include "constants.h"
 
@@ -29,16 +29,18 @@ private slots:
     void setupTimeCorrectedByAlpha();
     void setupAmpByGamma(const int gammaNumber = AppConstants::MAX_GAMMA_NUMBER);
 
+    void showDialog(QString);
+
 private:
     Ui::MainWindow *ui;
     FileWatcher *m_fileWatcher;
     QString m_path;
 
-    QList<MainWidget *> m_mainWidgetsTimeCorrectedByAlpha;
+    QList<ChartWidget *> m_chartWidgetsTimeCorrectedByAlpha;
     QList<QAbstractSeries *> m_seriesTimeCorrectesByAlpha;
     QMap<QString, QList<QPointF>> m_dataTimeCorrectedByAlpha;
 
-    QList<MainWidget *> m_mainWidgetsAmpByGamma;
+    QList<ChartWidget *> m_chartWidgetsAmpByGamma;
     QList<QAbstractSeries *> m_seriesAmpByGamma;
     QMap<QString, QList<QPointF>> m_dataAmpByGamma;
 
@@ -59,7 +61,7 @@ private:
 
     QGridLayout *m_gLleft;
 //    QGridLayout *m_gLright;
-
+    QDialog *m_dialog;
 
 };
 #endif // MAINWINDOW_H

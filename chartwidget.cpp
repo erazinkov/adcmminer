@@ -1,8 +1,8 @@
-#include "mainwidget.h"
+#include "chartwidget.h"
 
 #include <QFile>
 
-MainWidget::MainWidget(QWidget *parent)
+ChartWidget::ChartWidget(QWidget *parent)
     : QWidget{parent}
 {
     setAttribute(Qt::WA_Hover);
@@ -13,7 +13,7 @@ MainWidget::MainWidget(QWidget *parent)
         "QWidget {"
         "    background-color: transparent;"
         "    border: 1px solid #ddd;"
-        "    border-radius: 8px;"
+        "    border-radius: 5px;"
         "}"
         "QWidget:hover {"
         "    border: 1px solid #3498db;"
@@ -21,7 +21,7 @@ MainWidget::MainWidget(QWidget *parent)
         "}"
     );
     m_chart = new QChart;
-    m_chartView = new QChartView(m_chart, this);
+    m_chartView = new ChartView(m_chart, this);
 //    m_shadowEffect = new QGraphicsDropShadowEffect(this);
 //    m_shadowEffect->setBlurRadius(0);
 //    m_shadowEffect->setOffset(0, 0);
@@ -32,7 +32,7 @@ MainWidget::MainWidget(QWidget *parent)
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
     // Set the title and show legend
-    m_chart->setAnimationOptions(QChart::AnimationOption::NoAnimation);
+//    m_chart->setAnimationOptions(QChart::AnimationOption::NoAnimation);
 //    m_chart->setTitle("Legendmarker example (click on legend)");
     m_chart->legend()->setVisible(false);
 //    m_chart->legend()->setAlignment(Qt::AlignRight);
@@ -42,7 +42,7 @@ MainWidget::MainWidget(QWidget *parent)
 
 
 
-void MainWidget::removeSeries()
+void ChartWidget::removeSeries()
 {
     while (m_chart->series().count() > 0) {
         QAbstractSeries *series = m_chart->series().last();
@@ -52,7 +52,7 @@ void MainWidget::removeSeries()
 }
 
 
-void MainWidget::setSeries(QList<QAbstractSeries *> series)
+void ChartWidget::setSeries(QList<QAbstractSeries *> series)
 {
     for (const auto &item : series)
     {
@@ -60,7 +60,7 @@ void MainWidget::setSeries(QList<QAbstractSeries *> series)
     }
 }
 
-void MainWidget::connectMarkers()
+void ChartWidget::connectMarkers()
 {
     // Connect all markers to handler
     foreach (QLegendMarker* marker, m_chart->legend()->markers()) {
@@ -70,14 +70,14 @@ void MainWidget::connectMarkers()
     }
 }
 
-void MainWidget::disconnectMarkers()
+void ChartWidget::disconnectMarkers()
 {
     foreach (QLegendMarker *marker, m_chart->legend()->markers()) {
         QObject::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
     }
 }
 
-void MainWidget::handleMarkerClicked()
+void ChartWidget::handleMarkerClicked()
 {
     QLegendMarker* marker = qobject_cast<QLegendMarker*> (sender());
     Q_ASSERT(marker);
@@ -119,7 +119,7 @@ void MainWidget::handleMarkerClicked()
     }
 }
 
-void MainWidget::process(QList<QAbstractSeries *> series)
+void ChartWidget::process(QList<QAbstractSeries *> series)
 {
     disconnectMarkers();
     removeSeries();
@@ -131,7 +131,7 @@ void MainWidget::process(QList<QAbstractSeries *> series)
     }
 }
 
-void MainWidget::setTitle(const QString &title)
+void ChartWidget::setTitle(const QString &title)
 {
     m_chart->setTitle(title);
 }

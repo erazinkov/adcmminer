@@ -11,7 +11,7 @@ class PeakFinder
 {
 public:
     PeakFinder(const u_int8_t gammaNumber);
-    void process(std::vector<TH1 *> &histsSg, std::vector<TH1 *> &histsBg);
+    void process(const std::vector<TH1D *> &hists, const std::vector<TH1D *> &histsRc);
 
     const std::vector<std::vector<EnergyPeak> > &energyPeaks() const;
 

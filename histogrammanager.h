@@ -38,6 +38,16 @@ public:
 
     const std::vector<TH1D *> &histsAmpByGamma() const;
 
+    const std::vector<TH1D *> &histsAmpByGammaRc() const;
+
+    const std::vector<std::vector<TH1D *> > &histsAmpByGammaAlphaRc() const;
+
+    const std::vector<std::vector<TH1D *> > &histsEnergyByGammaAlphaSg() const;
+
+    const std::vector<std::vector<TH1D *> > &histsEnergyByGammaAlphaBg() const;
+
+    const std::vector<TH1D *> &histsEnergyByGamma() const;
+
 private:
     const int gammaNumber_;
     const int alphaNumber_;
@@ -68,6 +78,11 @@ private:
 
     std::vector<TH1D *> histsAmpByGamma_;
     std::vector<TH1D *> histsAmpByGammaRc_;
+
+
+    std::vector<std::vector<TH1D *>> histsEnergyByGammaAlphaSg_;
+    std::vector<std::vector<TH1D *>> histsEnergyByGammaAlphaBg_;
+    std::vector<TH1D *> histsEnergyByGamma_;
 };
 
 #endif // HISTOGRAMMANAGER_H

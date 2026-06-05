@@ -1,5 +1,5 @@
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef CHARTWIDGET_H
+#define CHARTWIDGET_H
 
 
 #include <QtCharts/QChartGlobal>
@@ -18,12 +18,13 @@
 
 
 #include "mousepresseater.h"
+#include "chartview.h"
 
-class MainWidget : public QWidget
+class ChartWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit MainWidget(QWidget *parent = nullptr);
+    explicit ChartWidget(QWidget *parent = nullptr);
 
 signals:
     void hovered(QString);
@@ -42,7 +43,7 @@ private slots:
 private:
 
     QChart *m_chart;
-    QChartView *m_chartView;
+    ChartView *m_chartView;
 //    QGridLayout *m_mainLayout;
     MousePressEater *m_mousePressEater;
 //    QGraphicsDropShadowEffect *m_shadowEffect;
@@ -64,4 +65,4 @@ protected:
 
 };
 
-#endif // MAINWIDGET_H
+#endif // CHARTWIDGET_H
