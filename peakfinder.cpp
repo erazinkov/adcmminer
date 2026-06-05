@@ -15,8 +15,7 @@ void PeakFinder::process(const std::vector<TH1D *> &hists, const std::vector<TH1
 {
     TVirtualFitter::SetDefaultFitter("Minuit");
 
-    for (size_t i{0}; i < energyPeaks_.size(); ++i)
-    {
+    for (size_t i{0}; i < energyPeaks_.size(); ++i) {
         TGraphErrors graphPolN(5);
         auto fe847PosApprox{getFerrum847PosApprox(histsRc.at(i), 0.12)};
 

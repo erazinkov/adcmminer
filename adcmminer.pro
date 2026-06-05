@@ -24,7 +24,8 @@ SOURCES += \
     histogrammanager.cpp \
     peakfinder.cpp \
     energypeak.cpp \
-    chartview.cpp
+    chartview.cpp \
+    piecewiselinearfunction.cpp
 
 INCLUDEPATH += $$system(root-config --incdir)
 LIBS += $$system(root-config --libs) -lMinuit -lSpectrum
@@ -47,7 +48,8 @@ HEADERS += \
     histogrammanager.h \
     peakfinder.h \
     energypeak.h \
-    chartview.h
+    chartview.h \
+    piecewiselinearfunction.h
 
 FORMS += \
     mainwindow.ui

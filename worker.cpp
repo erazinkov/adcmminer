@@ -32,7 +32,7 @@ void Worker::doWorkS()
 //    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
 //    m_calibration->setNewEvents(m_data, m_decoder->channels());
     start = std::chrono::steady_clock::now();
-    m_calibration->setNewEventsM(m_decoder->events_m(), m_decoder->channels());
+    m_calibration->setNewEvents(m_decoder->events_m(), m_decoder->channels());
     stop = std::chrono::steady_clock::now();
     std::cout << "setNewEventsM Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     start = std::chrono::steady_clock::now();
@@ -79,7 +79,7 @@ void Worker::histToPointsAmpByGamma()
     QMap<QString, QList<QPointF>> data;
     for (ulong i{0}; i < m_decoder->channels().g.size(); ++i) {
         TH1 *h;
-        h = m_calibration->histogramManager->histsAmpByGammaRc()[i];
+        h = m_calibration->histogramManager->histsEnergyByGamma()[i];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {
