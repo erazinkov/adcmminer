@@ -10,10 +10,12 @@
 class PeakFinder
 {
 public:
-    PeakFinder(const u_int8_t gammaNumber);
-    void process(const std::vector<TH1D *> &hists, const std::vector<TH1D *> &histsRc);
+    PeakFinder();
+    void process(TH1D *hist, TH1D * histRc);
+    void processRaw(TH1D *hist);
+    const std::vector<EnergyPeak> &energyPeaks() const;
 
-    const std::vector<std::vector<EnergyPeak> > &energyPeaks() const;
+    const EnergyPeak &energyPeak() const;
 
 private:
     double calib_;
@@ -32,7 +34,8 @@ private:
     double getOxygenPos(TH1 *h, double appPos);
     double getFerrum7631Pos(TH1 *h, double appPos);
 
-    std::vector<std::vector<EnergyPeak>>  energyPeaks_;
+    std::vector<EnergyPeak>  energyPeaks_;
+    EnergyPeak energyPeak_{EnergyPeak(EnergyPeak::Id::FE847, 0.0)};
 
 };
 

@@ -4,9 +4,10 @@
 #include "adcm_df.h"
 
 
-#include <histogrammanager.h>
+#include "histogrammanager.h"
 #include "timepeaksfinder.h"
 #include "energypeak.h"
+#include "peakfinder.h"
 
 class Calibration
 {
@@ -23,6 +24,9 @@ private:
     dec_ch_t channels_;
     std::unique_ptr<TimePeaksFinder> timePeaksFinder_; // TODO
     std::vector<std::vector<EnergyPeak>>  energyPeaks_;
+    std::vector<EnergyPeak>  energyPeaksRaw_;
+
+    PeakFinder peakFinder_;
 
     void fillHistTime(const std::vector<dec_ev_m_t> &events, TH1 *h, double correction);
     void fillHistAmp(const std::vector<dec_ev_m_t> &events, TH1 *h, double minT, double maxT, bool exclude);
@@ -48,6 +52,8 @@ private:
 
 
     std::vector<std::vector<double>> _timePeaksPos;
+
+
 
 };
 

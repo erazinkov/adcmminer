@@ -9,7 +9,7 @@
 
 #include "utils.h"
 #include "constants.h"
-#include "peakfinder.h"
+
 #include "piecewiselinearfunction.h"
 
 Calibration::Calibration()
@@ -38,17 +38,20 @@ void Calibration::process()
 
     fillHistsAmpByGammaAlpha(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg(), histogramManager->histsAmpByGammaAlphaRc());
 
-//    fillHistsAmpByAlpha(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg());
+
     fillHistsAmpByGamma(histogramManager->histsAmpByGammaAlphaSg(), histogramManager->histsAmpByGammaAlphaBg(), histogramManager->histsAmpByGammaAlphaRc());
 
-    PeakFinder peakFinder(channels_.g.size());
-    peakFinder.process(histogramManager->histsAmpByGamma(), histogramManager->histsAmpByGammaRc());
-    energyPeaks_ = peakFinder.energyPeaks();
+
+    energyPeaksRaw_.clear();
+    for (size_t i{0}; i < std::min(histogramManager->histsAmpByGamma().size(), channels_.g.size()); ++i) {
+        peakFinder_.processRaw(histogramManager->histsAmpByGammaRc().at(i));
+        energyPeaksRaw_.push_back(peakFinder_.energyPeak());
+    }
+
 
     fillHistsEnergyByGammaAlpha(histogramManager->histsEnergyByGammaAlphaSg(), histogramManager->histsEnergyByGammaAlphaBg());
-
-
     fillHistsEnergyByGamma(histogramManager->histsEnergyByGammaAlphaSg(), histogramManager->histsEnergyByGammaAlphaBg());
+
     fillHistsTimeByAlpha(histogramManager->histsTimeCorrectedByGammaAlpha());
 }
 
@@ -137,8 +140,8 @@ void Calibration::fillHistsAmpByGammaAlpha(const std::vector<std::vector<TH1D *>
                                            const std::vector<std::vector<TH1D *> > &histsRc)
 {
     std::vector<std::function<void()>> tasks;
-    for (size_t i{0}; i < histsSg.size(); ++i) {
-        for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
+    for (size_t i{0}; i < std::min(histsSg.size(), channels_.g.size()); ++i) {
+        for (size_t j{0}; j <  std::min(histsSg.at(i).size(), channels_.a.size()); ++j) {
             tasks.push_back([this, &histsSg, &histsBg, &histsRc, i, j](){
                 histsSg.at(i).at(j)->Reset();
                 histsBg.at(i).at(j)->Reset();
@@ -181,8 +184,8 @@ void Calibration::fillHistsAmpByGamma(const std::vector<std::vector<TH1D *> > &h
         histogramManager->histsAmpByGamma()[i]->Reset();
         histogramManager->histsAmpByGammaRc()[i]->Reset();
     }
-    for (size_t i{0}; i < histsSg.size(); ++i) {
-        for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
+    for (size_t i{0}; i < std::min(histsSg.size(), channels_.g.size()); ++i) {
+        for (size_t j{0}; j <  std::min(histsSg.at(i).size(), channels_.a.size()); ++j) {
             histogramManager->histsAmpByGamma()[i]->Add(histsSg.at(i).at(j));
             histogramManager->histsAmpByGamma()[i]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
 
@@ -193,30 +196,32 @@ void Calibration::fillHistsAmpByGamma(const std::vector<std::vector<TH1D *> > &h
 
 void Calibration::fillHistsEnergyByGammaAlpha(const std::vector<std::vector<TH1D *> > &histsSg, const std::vector<std::vector<TH1D *> > &histsBg)
 {
-//    std::cout << "!!!!!!!!!!!!!!!!! " << energyPeaks_.size() << " " << histsSg.size() << std::endl;
-//    std::vector<TF1> fs;
-//    for (size_t i{0}; i < histsSg.size(); ++i) {
-//        if (i < channels_.g.size()) {
-//            PiecewiseLinearFunction fObj(energyPeaks_.at(i));
-//            TF1 f("f", fObj, 0, 4'000, 0);
-//            fs.push_back(f);
-//        }
-//    }
+
+    auto ff = [] (double *x, double *par) {
+        double xx = x[0];
+        return par[0] + par[1] * xx;
+    };
+
+    std::vector<TF1> fs;
+    for (size_t i{0}; i < std::min(histsSg.size(), channels_.g.size()); ++i) {
+        TF1 f("f", ff, 0, 4'000, 2);
+        f.SetParameters(0.0, energyPeaksRaw_.at(i).energy() / energyPeaksRaw_.at(i).channel());
+        fs.push_back(f);
+    }
     std::vector<std::function<void()>> tasks;
     for (size_t i{0}; i < std::min(histsSg.size(), channels_.g.size()); ++i) {
         for (size_t j{0}; j <  std::min(histsSg.at(i).size(), channels_.a.size()); ++j) {
-            tasks.push_back([this, &histsSg, &histsBg, i, j](){
+            tasks.push_back([this, &histsSg, &histsBg, i, j, &fs](){
                 histsSg.at(i).at(j)->Reset();
                 histsBg.at(i).at(j)->Reset();
-                PiecewiseLinearFunction fObj(energyPeaks_.at(i));
-                TF1 f("f", fObj, 0, 4'000, 0);
+//                PiecewiseLinearFunction fObj(energyPeaks_.at(i));
                 std::pair<uint8_t, uint8_t> p{*std::next(channels_.g.begin(), i), *std::next(channels_.a.begin(), j)};
                 auto minT_sg{timeCorrections_[{i, j}] - 3.0};
                 auto maxT_sg{timeCorrections_[{i, j}] + 3.0};
-                fillHistEnergy(events_m_[p], histsSg.at(i).at(j), minT_sg, maxT_sg, false, f);
+                fillHistEnergy(events_m_[p], histsSg.at(i).at(j), minT_sg, maxT_sg, false, fs.at(i));
                 auto minT_bg{timeCorrections_[{i, j}] - 30.0};
                 auto maxT_bg{timeCorrections_[{i, j}] - 20.0};
-                fillHistEnergy(events_m_[p], histsBg.at(i).at(j), minT_bg, maxT_bg, false, f);
+                fillHistEnergy(events_m_[p], histsBg.at(i).at(j), minT_bg, maxT_bg, false, fs.at(i));
             });
         }
     }

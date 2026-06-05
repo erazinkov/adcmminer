@@ -14,5 +14,5 @@ void ChartView::resizeEvent(QResizeEvent *event)
 {
     chart()->setAnimationOptions(QChart::NoAnimation);
     QChartView::resizeEvent(event);
-    chart()->setAnimationOptions(QChart::AllAnimations);
+    chart()->setAnimationOptions(QChart::SeriesAnimations);
 }

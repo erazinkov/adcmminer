@@ -106,7 +106,7 @@ void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>>
         m_dataTimeCorrectedByAlpha.insert(i.key(), i.value());
     }
     m_seriesTimeCorrectesByAlpha.clear();
-    auto dataColor{QColor::fromRgb(0, 255, 255)};
+    auto dataColor{QColorConstants::Blue};
     for (auto i = m_dataTimeCorrectedByAlpha.cbegin(), end = m_dataTimeCorrectedByAlpha.cend(); i != end; ++i)
     {
         QLineSeries *series = new QLineSeries();
@@ -154,7 +154,7 @@ void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data)
         m_dataAmpByGamma.insert(i.key(), i.value());
     }
     m_seriesAmpByGamma.clear();
-    auto dataColor{QColor::fromRgb(0, 255, 255)};
+    auto dataColor{QColorConstants::Green};
     for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
     {
         QLineSeries *series = new QLineSeries();
@@ -255,6 +255,7 @@ void MainWindow::showDialog(QString title) {
             m_dialog = new QDialog(this);
             m_dialog->setWindowTitle("Information");
             m_dialog->setModal(false);
+            m_dialog->setWindowFlags(Qt::ToolTip);
             m_dialog->setAttribute(Qt::WA_DeleteOnClose);
 
             QVBoxLayout *layout = new QVBoxLayout(m_dialog);
