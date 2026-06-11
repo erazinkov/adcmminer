@@ -17,7 +17,3 @@ Controller::~Controller() {
     workerThread.wait();
 }
 
-//void Controller::handleResults(const QMap<QString, QList<QPointF> > &result)
-//{
-
-//}

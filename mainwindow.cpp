@@ -11,11 +11,26 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_settings = new Settings("settings.ini", this);
+
+    statusBar()->showMessage(m_settings->path());
+
+    QMenu *fileMenu = new QMenu(tr("&File"), this);
+    QAction *openAction = fileMenu->addAction(tr("&Open..."), this, &MainWindow::openFile);
+    openAction->setShortcuts(QKeySequence::Open);
+    QAction *quitAction = fileMenu->addAction(tr("E&xit"));
+    quitAction->setShortcuts(QKeySequence::Quit);
+    menuBar()->addMenu(fileMenu);
+
+    connect(quitAction, &QAction::triggered, this, &MainWindow::close);
+
     QWidget *widget = new QWidget;
+
     m_mainLayout = new QHBoxLayout(widget);
+
     setCentralWidget(widget);
     m_dialog = nullptr;
-    m_path = AppConstants::PATH;
+    m_path = m_settings->path();
 //    m_path = "/misc/agpk_std/adcm.dat";
     m_fileWatcher = new FileWatcher(m_path);
     m_fileWatcher->moveToThread(&workerThread);
@@ -99,11 +114,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+
     if (m_fileWatcherTimer != nullptr) {
         m_fileWatcherTimer->stop();
     }
     workerThread.quit();
     workerThread.wait();
+
+    m_settings->writeSettings();
     delete ui;
 }
 
@@ -293,6 +311,19 @@ void MainWindow::showDialog(QString title) {
             connect(m_dialog, &QDialog::finished, this, [this]() {
                 m_dialog = nullptr;
             });
-       }
+}
+
+void MainWindow::openFile() {
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open File"),
+        "",
+        tr("All Files (*.*);;ADCM Files (*.dat)"));
+
+    if (fileName.isEmpty()) {
+        return;
+    }
+    m_path = fileName;
+    m_settings->setPath(m_path);
+}
 
 

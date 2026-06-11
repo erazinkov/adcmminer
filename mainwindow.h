@@ -8,6 +8,7 @@
 #include "chartwidget.h"
 #include "controller.h"
 #include "constants.h"
+#include "settings.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -31,10 +32,14 @@ private slots:
 
     void showDialog(QString);
 
+    void openFile();
+
 private:
     Ui::MainWindow *ui;
+    Settings *m_settings;
     FileWatcher *m_fileWatcher;
     QString m_path;
+
 
     QList<ChartWidget *> m_chartWidgetsTimeCorrectedByAlpha;
     QList<QAbstractSeries *> m_seriesTimeCorrectesByAlpha;

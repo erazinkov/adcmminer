@@ -11,10 +11,12 @@ class FileWatcher : public QObject
     Q_OBJECT
 public:
     FileWatcher(const QString &path, QObject *parent = nullptr);
+
 signals:
     void onFileChanged(const QString &);
 public slots:
     void operate();
+    void operateNewPath(const QString &);
 private slots:
     void fileChanged(const QString &);
 private:
