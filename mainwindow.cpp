@@ -11,104 +11,90 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    createActions();
-    fileMenu = ui->menubar->addMenu(tr("&File"));
-    fileMenu->addAction(openAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
-
-
     QWidget *widget = new QWidget;
+    m_mainLayout = new QHBoxLayout(widget);
     setCentralWidget(widget);
-
-    QWidget *topFiller = new QWidget;
-    topFiller->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-    QWidget *bottomFiller = new QWidget;
-    bottomFiller->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-
-    QString message = tr("A context menu is available by right-clicking");
-    statusBar()->showMessage(message);
-
-
-    m_path = "/home/egor/build-adcmemulate-Desktop-Debug/adcm.dat";
+    m_dialog = nullptr;
+    m_path = AppConstants::PATH;
 //    m_path = "/misc/agpk_std/adcm.dat";
     m_fileWatcher = new FileWatcher(m_path);
     m_fileWatcher->moveToThread(&workerThread);
-
     m_fileWatcherTimer = new QTimer(this);
     m_fileWatcherTimer->setInterval(1000);
 
-    m_controller = new Controller(m_path, m_pre);
-    m_pushButton = new QPushButton("Button", this);
-    m_comboBox = new QComboBox(this);
-    m_label = new QLabel("Gamma:", this);
+    m_controller = new Controller(m_path);
 
-    m_groupBox = new QGroupBox(this);
-    QHBoxLayout *rBLayout = new QHBoxLayout;
-    m_rBtime = new QRadioButton("Time");
-    m_rBtime->setChecked(true);
-    m_rBamp = new QRadioButton("Amp");
-    rBLayout->addWidget(m_rBtime);
-    rBLayout->addWidget(m_rBamp);
+    m_pushButtonStartStop = new QPushButton("Start", this);
+    m_pushButtonStartStop->setCheckable(true);
 
-    m_groupBox->setLayout(rBLayout);
+    m_pushButtonReset = new QPushButton("Reset", this);
 
-    for (uint i{0}; i < m_pre.numberOfChannelsGamma(); ++i)
-    {
-        m_comboBox->addItem(QString("%1").arg(i));
-    }
 
-    QGridLayout *gLleft = new QGridLayout;
-    QGridLayout *gLright = new QGridLayout;
 
-    gLleft->addWidget(m_pushButton, 0, 0, 1, 2);
-    gLleft->addWidget(m_label, 1, 0);
-    gLleft->addWidget(m_comboBox, 1, 1);
-    gLleft->addWidget(m_groupBox, 2, 0, 1, 2);
-    gLleft->setAlignment(Qt::AlignTop);
-    gLright->setContentsMargins(0, 0, 0, 0);
-    gLright->setSpacing(0);
-    m_mainWidgetList.resize(static_cast<qsizetype>(m_pre.numberOfChannelsAlpha()));
-    for (qsizetype i{0}, j{0}; i < m_mainWidgetList.size(); ++i, ++j)
-    {
-        m_mainWidgetList[i] = new MainWidget(this);
-        gLright->addWidget(m_mainWidgetList[i], static_cast<int>((j - (i % 3)) / 3), static_cast<int>(i % 3));
-    }
+    m_widgetLeft = new QWidget(widget);
+    m_widgetRight = new QWidget(widget);
 
-    QHBoxLayout *mainLayout = new QHBoxLayout;
-    mainLayout->addLayout(gLleft);
-    mainLayout->addLayout(gLright);
+    m_gLleft = new QGridLayout(m_widgetLeft);
+//    m_gLright = new QGridLayout(m_widgetRight);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(5, 5, 5, 5);
-    layout->addWidget(topFiller);
-    layout->addLayout(mainLayout, 1);
-    layout->addWidget(bottomFiller);
-    widget->setLayout(layout);
+    m_gLleft->addWidget(m_pushButtonStartStop, 0, 0);
+    m_pushButtonStartStop->setStyleSheet(
+        "QPushButton {"
+        "   color: white;"
+        "}"
+        "QPushButton:checked {"
+        "   background-color: #d32f2f;"
+        "}"
+        "QPushButton:checked:hover {"
+        "   background-color: #f44336;"
+        "}"
+        "QPushButton:!checked {"
+        "   background-color: #388e3c;"
+        "}"
+        "QPushButton:!checked:hover {"
+        "   background-color: #4caf50;"
+        "}"
+    );
+    m_gLleft->addWidget(m_pushButtonReset, 1, 0);
 
-    connect(m_comboBox, &QComboBox::currentTextChanged, [this](const QString &str){
-        m_selected = str;
-        m_controller->operate1(m_selected, m_type);
-    });
-    connect(m_controller, &Controller::handleResults, this, &MainWindow::newData);
+    m_tabWidget = new QTabWidget(m_widgetRight);
+    m_page_1 = new QWidget;
+    m_tabWidget->addTab(m_page_1, "TimeByAlpha");
+    m_page_2 = new QWidget;
+    m_tabWidget->addTab(m_page_2, "AmpByGamma");
+    m_mainLayout->addWidget(m_widgetLeft);
+    m_mainLayout->addWidget(m_tabWidget);
+
+
+    connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
+    connect(m_controller, &Controller::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
     connect(&workerThread, &QThread::finished, m_fileWatcher, &QObject::deleteLater);
     connect(m_fileWatcherTimer, &QTimer::timeout, m_fileWatcher, &FileWatcher::operate);
 
     connect(m_fileWatcher, &FileWatcher::onFileChanged, [this](const QString &path){
         qInfo() << path;
-        m_controller->operate(m_selected, m_type);
+        m_controller->operateS();
     });
 
-    connect(m_rBtime, &QRadioButton::clicked, this, &MainWindow::onRadioClicked);
-    connect(m_rBamp, &QRadioButton::clicked, this, &MainWindow::onRadioClicked);
 
+    connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
+        if (checked) {
+            m_pushButtonStartStop->setText("Stop");
+            m_fileWatcherTimer->start();
+        } else {
+            m_pushButtonStartStop->setText("Start");
+            m_fileWatcherTimer->stop();
+        }
+    });
+
+    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateR);
 
     workerThread.start();
-    m_fileWatcherTimer->start();
 
+    setupTimeCorrectedByAlpha();
+    setupAmpByGamma();
+
+//    onCurrentTextChanged(m_comboBox->currentText());
 }
 
 MainWindow::~MainWindow()
@@ -121,22 +107,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onFileChanged(const QString &pathAndTime)
+void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data)
 {
-
-}
-
-void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
-{
-
-    m_data.clear();
+    qDebug() << "newDataTimeCorrectedByAlpha - received";
+    m_dataTimeCorrectedByAlpha.clear();
     for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
     {
-        m_data.insert(i.key(), i.value());
+        m_dataTimeCorrectedByAlpha.insert(i.key(), i.value());
     }
-    m_series.clear();
-    auto dataColor{QColor::fromRgb(0, 255, 255)};
-    for (auto i = m_data.cbegin(), end = m_data.cend(); i != end; ++i)
+    m_seriesTimeCorrectesByAlpha.clear();
+    auto dataColor{QColorConstants::Blue};
+    for (auto i = m_dataTimeCorrectedByAlpha.cbegin(), end = m_dataTimeCorrectedByAlpha.cend(); i != end; ++i)
     {
         QLineSeries *series = new QLineSeries();
         series->append(i.value());
@@ -155,91 +136,163 @@ void MainWindow::newData(const QMap<QString, QList<QPointF>> &data)
         areaSeries->setBrush(dataGradient);
         areaSeries->setColor(dataColor);
         areaSeries->setName(i.key());
-        m_series.append(areaSeries);
+        m_seriesTimeCorrectesByAlpha.append(areaSeries);
     }
-    for (auto i{0}; i < m_series.size(); ++i)
-    {
-        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-        m_mainWidgetList.at(i)->process({m_series.at(i)});
-    }
-}
 
-void MainWindow::newDataShow()
-{
-    m_series.clear();
-    auto dataColor{QColor::fromRgb(0, 255, 255)};
-    for (auto i = m_data.cbegin(), end = m_data.cend(); i != end; ++i)
+    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_chartWidgetsTimeCorrectedByAlpha.size()); ++i)
     {
-        QLineSeries *series = new QLineSeries();
-        series->append(i.value());
-        series->setName(i.key());
-        QAreaSeries *areaSeries = new QAreaSeries(series);
-        QPen pen;
-        pen.setWidth(1);
-        pen.setColor(dataColor);
-        areaSeries->setPen(pen);
-        areaSeries->setColor(dataColor);
-        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-        dataGradient.setColorAt(0.0, dataColor);
-        dataGradient.setColorAt(1.0, dataColor.lighter());
-        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-        areaSeries->setOpacity(0.75);
-        areaSeries->setBrush(dataGradient);
-        areaSeries->setColor(dataColor);
-        areaSeries->setName(i.key());
-        m_series.append(areaSeries);
+        m_chartWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
+        m_chartWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
     }
-//    for (auto i = m_data.cbegin(), end = m_data.cend(); i != end; ++i)
+
+//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
 //    {
-//        QSplineSeries *series = new QSplineSeries();
-//        series->append(i.value());
-//        series->setMarkerSize(2.5);
-//        series->setColor(Qt::black);
-//        series->setName(i.key());
-//        m_series.append(series);
+//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
+//        m_mainWidgetList.at(i)->process({m_series.at(i)});
 //    }
-    for (auto i{0}; i < m_series.size(); ++i)
+}
+
+void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
+{
+    qDebug() << "newDataAmpByGamma - received";
+    if (data.size() != m_dataAmpByGamma.size()) {
+        setupAmpByGamma(data.size());
+    }
+    m_dataAmpByGamma.clear();
+    QList<QStringList> t;
+    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
     {
-        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-        m_mainWidgetList.at(i)->process({m_series.at(i)});
+        m_dataAmpByGamma.insert(i.key(), i.value());
+        t.append(text[i.key()]);
+    }
+    m_seriesAmpByGamma.clear();
+
+    auto dataColor{QColorConstants::Green};
+    for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
+    {
+        QLineSeries *series = new QLineSeries();
+        series->append(i.value());
+        series->setName(i.key());
+        QAreaSeries *areaSeries = new QAreaSeries(series);
+        QPen pen;
+        pen.setWidth(1);
+        pen.setColor(dataColor);
+        areaSeries->setPen(pen);
+        areaSeries->setColor(dataColor);
+        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
+        dataGradient.setColorAt(0.0, dataColor);
+        dataGradient.setColorAt(1.0, dataColor.lighter());
+        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+        areaSeries->setOpacity(0.75);
+        areaSeries->setBrush(dataGradient);
+        areaSeries->setColor(dataColor);
+        areaSeries->setName(i.key());
+        m_seriesAmpByGamma.append(areaSeries);
+
+    }
+
+    qDebug() << text;
+
+    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
+    {
+//        m_chartWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
+//        m_chartWidgetsAmpByGamma.at(i)->setTitle("");
+
+        m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
+        m_chartWidgetsAmpByGamma.at(i)->setHeader(t.at(i));
+    }
+
+//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
+//    {
+//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
+//        m_mainWidgetList.at(i)->process({m_series.at(i)});
+//    }
+}
+
+void MainWindow::setupTimeCorrectedByAlpha()
+{
+    m_page_1->setLayout(new QGridLayout(m_page_1));
+    static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
+    static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
+    m_chartWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_ALPHA_NUMBER)))};
+    auto index{0};
+    for (auto ir{0}; ir < cd; ++ir)
+    {
+        for (auto ic{0}; ic < cd; ++ic)
+        {
+            if (index < m_chartWidgetsTimeCorrectedByAlpha.size())
+            {
+                m_chartWidgetsTimeCorrectedByAlpha[index] = new ChartWidget;
+                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_chartWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
+                index++;
+            }
+        }
+    }
+    for (auto i{0}; i < cd; ++i)
+    {
+        static_cast<QGridLayout*>(m_page_1->layout())->setRowStretch(i, 1);
+        static_cast<QGridLayout*>(m_page_1->layout())->setColumnStretch(i, 1);
     }
 }
 
-void MainWindow::onClicked()
+void MainWindow::setupAmpByGamma(const int gammaNumber)
 {
-
+    if (m_page_2->layout()) {
+        delete m_page_2->layout();
+    }
+    for (auto i{0}; i < m_chartWidgetsAmpByGamma.size(); ++i) {
+        m_chartWidgetsAmpByGamma.at(i)->deleteLater();
+    }
+    m_page_2->setLayout(new QGridLayout(m_page_2));
+    static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
+    static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
+    m_chartWidgetsAmpByGamma.resize(gammaNumber);
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(gammaNumber)))};
+    auto index{0};
+    for (auto ir{0}; ir < cd; ++ir) {
+        for (auto ic{0}; ic < cd; ++ic) {
+            if (index < m_chartWidgetsAmpByGamma.size()) {
+                m_chartWidgetsAmpByGamma[index] = new ChartWidget;
+//                connect(m_chartWidgetsAmpByGamma[index], &ChartWidget::hovered, this, &MainWindow::showDialog);
+                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_chartWidgetsAmpByGamma.at(index), ir, ic);
+                index++;
+            }
+        }
+    }
+    for (auto i{0}; i < cd; ++i) {
+        static_cast<QGridLayout*>(m_page_2->layout())->setRowStretch(i, 1);
+        static_cast<QGridLayout*>(m_page_2->layout())->setColumnStretch(i, 1);
+    }
 }
 
-void MainWindow::onRadioClicked()
-{
-    m_type = m_rBtime->isChecked() ? Enums::Type::TIME : Enums::Type::AMP;
-    m_controller->operate1(m_selected, m_type);
-}
 
-void MainWindow::open()
-{
+void MainWindow::showDialog(QString title) {
+            qDebug() << "showDialog" << title;
+            if (m_dialog) return;  // Dialog already exists
+            qDebug() << "showDialog 1" << title;
+            m_dialog = new QDialog(this);
+            m_dialog->setWindowTitle("Information");
+            m_dialog->setModal(false);
+            m_dialog->setWindowFlags(Qt::ToolTip);
+            m_dialog->setAttribute(Qt::WA_DeleteOnClose);
 
-}
+            QVBoxLayout *layout = new QVBoxLayout(m_dialog);
+            QLabel *label = new QLabel("You hovered long enough!");
+            label->setAlignment(Qt::AlignCenter);
 
-void MainWindow::createActions()
-{
-    openAct = new QAction(tr("&Open..."), this);
-    openAct->setShortcuts(QKeySequence::Open);
-    openAct->setStatusTip(tr("Open an existing file"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+            QPushButton *closeBtn = new QPushButton("Close");
+            connect(closeBtn, &QPushButton::clicked, m_dialog, &QDialog::close);
 
-    exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcuts(QKeySequence::Quit);
-    exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
-}
+            layout->addWidget(label);
+            layout->addWidget(closeBtn);
 
-void MainWindow::createMenus()
-{
-     fileMenu = ui->menubar->addMenu(tr("&File"));
-     fileMenu->addAction(openAct);
-     fileMenu->addSeparator();
-     fileMenu->addAction(exitAct);
-}
+            m_dialog->show();
+
+            // Connect close signal to cleanup
+            connect(m_dialog, &QDialog::finished, this, [this]() {
+                m_dialog = nullptr;
+            });
+       }
 
 

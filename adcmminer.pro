@@ -1,4 +1,4 @@
-QT       += core gui charts concurrent
+QT       += core gui charts concurrent datavisualization
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -11,15 +11,21 @@ CONFIG += c++17
 SOURCES += \
     calibration.cpp \
     channelmap.cpp \
+    chartwidget.cpp \
     controller.cpp \
     datadelegate.cpp \
     decoder.cpp \
     filewatcher.cpp \
+    flowlayout.cpp \
     main.cpp \
-    mainwidget.cpp \
     mainwindow.cpp \
     mousepresseater.cpp \
-    worker.cpp
+    worker.cpp \
+    histogrammanager.cpp \
+    peakfinder.cpp \
+    energypeak.cpp \
+    chartview.cpp \
+    piecewiselinearfunction.cpp
 
 INCLUDEPATH += $$system(root-config --incdir)
 LIBS += $$system(root-config --libs) -lMinuit -lSpectrum
@@ -28,14 +34,22 @@ HEADERS += \
     adcm_df.h \
     calibration.h \
     channelmap.h \
+    chartwidget.h \
+    constants.h \
     controller.h \
     datadelegate.h \
     decoder.h \
     filewatcher.h \
-    mainwidget.h \
+    flowlayout.h \
     mainwindow.h \
     mousepresseater.h \
-    worker.h
+    utils.h \
+    worker.h \
+    histogrammanager.h \
+    peakfinder.h \
+    energypeak.h \
+    chartview.h \
+    piecewiselinearfunction.h
 
 FORMS += \
     mainwindow.ui

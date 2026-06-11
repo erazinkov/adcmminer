@@ -1,13 +1,14 @@
 #include "controller.h"
 
-Controller::Controller(const QString &path, const ChannelMap &pre)
+Controller::Controller(const QString &path)
 {
-    Worker *worker = new Worker(path, pre);
+    Worker *worker = new Worker(path);
     worker->moveToThread(&workerThread);
     connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(this, &Controller::operate, worker, &Worker::doWork);
-    connect(this, &Controller::operate1, worker, &Worker::doWork1);
-    connect(worker, &Worker::resultReady, this, &Controller::handleResults);
+    connect(this, &Controller::operateS, worker, &Worker::doWorkS);
+    connect(this, &Controller::operateR, worker, &Worker::doWorkR);
+    connect(worker, &Worker::resultReadyTimeCorrectedByAlpha, this, &Controller::handleResultsTimeCorrectedByAlpha);
+    connect(worker, &Worker::resultReadyAmpByGamma, this, &Controller::handleResultsAmpByGamma);
     workerThread.start();
 }
 

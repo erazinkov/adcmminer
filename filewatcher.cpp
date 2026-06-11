@@ -1,5 +1,7 @@
 #include "filewatcher.h"
 
+#include <QDebug>
+
 FileWatcher::FileWatcher(const QString &path, QObject *parent) : QObject(parent), m_path(path)
 {
     m_fileInfo = new QFileInfo(m_path);
@@ -19,7 +21,8 @@ void FileWatcher::operate()
 void FileWatcher::fileChanged(const QString &path)
 {
     auto lm{m_fileInfo->lastModified()};
-
+    auto bt{m_fileInfo->birthTime()};
+    qInfo() << lm << bt;
     m_fileInfo->refresh();
     if (lm != m_fileInfo->lastModified())
     {
