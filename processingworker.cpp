@@ -1,18 +1,18 @@
 #include "processingworker.h"
 
-ProcessingWorker::ProcessingWorker(const QString &path, QObject *parent)
+ProcessingWorker::ProcessingWorker(QObject *parent)
     : QObject{parent}
 {
-    m_decoder = new Decoder(path.toStdString());
+    m_decoder = new Decoder;
     m_calibration = new Calibration;
     m_dataDelegate = new DataDelegate;
 }
 
-void ProcessingWorker::doWorkS()
+void ProcessingWorker::doWorkS(const QString &path)
 {
     auto start = std::chrono::steady_clock::now();
     std::cout << "Started!" << std::endl;
-    m_decoder->process();
+    m_decoder->process(path.toStdString());
 //    std::cout << "Events with 2 pulses: " << m_decoder->events().size() << std::endl;
 //    std::cout << "Events with 1 pulse: " << m_decoder->events_1().size() << std::endl;
 //    std::cout << "Counters: " << m_decoder->counters().rawhits.size() << " " << m_decoder->counters().time << std::endl;
@@ -50,7 +50,6 @@ void ProcessingWorker::doWorkS()
 void ProcessingWorker::doWorkR()
 {
     m_calibration->resetEvents();
-//    m_calibration->process();
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
 }

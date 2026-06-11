@@ -20,7 +20,8 @@ void FileWatcherWorker::doWorkFC()
     } else {
         r.append(QString("<span style='color: red;'>%1</span> %2").arg(QChar(0x2718)).arg(m_fileInfo->absoluteFilePath()));
     }
-    emit resultReadyFileCheck(r, isModified);
+    QString p{m_fileInfo->absoluteFilePath()};
+    emit resultReadyFileCheck(r, p, isModified);
 }
 
 void FileWatcherWorker::doWorkP(const QString &newPath)

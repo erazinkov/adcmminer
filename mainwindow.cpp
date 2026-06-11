@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)), this);
     statusBar()->addWidget(m_statusMessageLabel);
     m_fileWatcherController = new FileWatcherController(m_path);
-    m_processingController = new ProcessingController(m_path);
+    m_processingController = new ProcessingController();
 
     m_pushButtonStartStop = new QPushButton("Start", this);
     m_pushButtonStartStop->setCheckable(true);
@@ -77,10 +77,10 @@ MainWindow::MainWindow(QWidget *parent)
     m_mainLayout->addWidget(m_tabWidget);
 
 
-    connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &path, const bool &isModified){
-        m_statusMessageLabel->setText(path);
+    connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &message, const QString &path, const bool &isModified){
+        m_statusMessageLabel->setText(message);
         if (isModified && m_pushButtonStartStop->isChecked()) {
-            m_processingController->operateS();
+            m_processingController->operateS(path);
         }
     });
 
@@ -184,8 +184,6 @@ void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, co
         m_seriesAmpByGamma.append(areaSeries);
 
     }
-
-    qDebug() << text;
 
     for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
     {

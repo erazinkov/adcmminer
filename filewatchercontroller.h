@@ -15,7 +15,7 @@ public:
     ~FileWatcherController() override;
 
 signals:
-    void handleResultsReadyFileCheck(const QString &, const bool &);
+    void handleResultsReadyFileCheck(const QString &, const QString &, const bool &);
 
     void operateFC();
     void operateP(const QString &);

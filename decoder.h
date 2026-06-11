@@ -9,9 +9,9 @@
 class Decoder
 {
 public:
-    Decoder(const std::string &);
+    Decoder();
     std::vector<dec_ev_t> & events();
-    void process();
+    void process(const std::string &fileName);
     std::vector<dec_ev_t> processA();
     const std::vector<dec_ev_1_t> &events_1() const;
 
@@ -21,7 +21,6 @@ public:
     const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &events_m() const;
 
 private:
-    std::string fileName_;
     std::ifstream ifs_;
 //    ChannelMap pre_;
     std::vector<dec_ev_t> events_;

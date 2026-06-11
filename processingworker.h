@@ -24,9 +24,9 @@ class ProcessingWorker : public QObject
 {
     Q_OBJECT
 public:
-    explicit ProcessingWorker(const QString &, QObject *parent = nullptr);
+    explicit ProcessingWorker(QObject *parent = nullptr);
 public slots:
-    void doWorkS();
+    void doWorkS(const QString &);
     void doWorkR();
 signals:
     void resultReadyTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);

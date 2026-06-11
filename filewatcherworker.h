@@ -15,7 +15,7 @@ public slots:
     void doWorkP(const QString &);
 
 signals:
-    void resultReadyFileCheck(const QString &, const bool &);
+    void resultReadyFileCheck(const QString &, const QString &, const bool &);
 private:
     QString m_path;
     QFileInfo *m_fileInfo;

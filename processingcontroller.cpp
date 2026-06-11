@@ -1,9 +1,9 @@
 #include "processingcontroller.h"
 
-ProcessingController::ProcessingController(const QString &path)
+ProcessingController::ProcessingController()
 {
     m_thread = new QThread(this);
-    m_worker = new ProcessingWorker(path);
+    m_worker = new ProcessingWorker();
     m_worker->moveToThread(m_thread);
 
     connect(this, &ProcessingController::operateS, m_worker, &ProcessingWorker::doWorkS);
