@@ -12,20 +12,22 @@ SOURCES += \
     calibration.cpp \
     channelmap.cpp \
     chartwidget.cpp \
-    controller.cpp \
     datadelegate.cpp \
     decoder.cpp \
     filewatcher.cpp \
+    filewatchercontroller.cpp \
+    filewatcherworker.cpp \
     flowlayout.cpp \
     main.cpp \
     mainwindow.cpp \
     mousepresseater.cpp \
-    worker.cpp \
+    processingcontroller.cpp \
     histogrammanager.cpp \
     peakfinder.cpp \
     energypeak.cpp \
     chartview.cpp \
     piecewiselinearfunction.cpp \
+    processingworker.cpp \
     settings.cpp
 
 INCLUDEPATH += $$system(root-config --incdir)
@@ -37,15 +39,17 @@ HEADERS += \
     channelmap.h \
     chartwidget.h \
     constants.h \
-    controller.h \
     datadelegate.h \
     decoder.h \
     filewatcher.h \
+    filewatchercontroller.h \
+    filewatcherworker.h \
     flowlayout.h \
     mainwindow.h \
     mousepresseater.h \
+    processingcontroller.h \
+    processingworker.h \
     utils.h \
-    worker.h \
     histogrammanager.h \
     peakfinder.h \
     energypeak.h \

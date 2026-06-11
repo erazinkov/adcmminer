@@ -6,9 +6,11 @@
 
 #include "filewatcher.h"
 #include "chartwidget.h"
-#include "controller.h"
+#include "processingcontroller.h"
 #include "constants.h"
 #include "settings.h"
+#include "filewatchercontroller.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -39,6 +41,7 @@ private:
     Settings *m_settings;
     FileWatcher *m_fileWatcher;
     QString m_path;
+    QLabel *m_statusMessageLabel;
 
 
     QList<ChartWidget *> m_chartWidgetsTimeCorrectedByAlpha;
@@ -52,7 +55,8 @@ private:
     QTimer *m_fileWatcherTimer;
     QPushButton *m_pushButtonStartStop;
     QPushButton *m_pushButtonReset;
-    Controller *m_controller;
+    ProcessingController *m_controller;
+    FileWatcherController *m_fileWatcherController;
 
     QTabWidget *m_tabWidget;
 

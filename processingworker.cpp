@@ -1,13 +1,14 @@
-#include "worker.h"
+#include "processingworker.h"
 
-Worker::Worker(const QString &path)
+ProcessingWorker::ProcessingWorker(const QString &path, QObject *parent)
+    : QObject{parent}
 {
     m_decoder = new Decoder(path.toStdString());
     m_calibration = new Calibration;
     m_dataDelegate = new DataDelegate;
 }
 
-void Worker::doWorkS()
+void ProcessingWorker::doWorkS()
 {
     auto start = std::chrono::steady_clock::now();
     std::cout << "Started!" << std::endl;
@@ -46,7 +47,7 @@ void Worker::doWorkS()
     std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
 }
 
-void Worker::doWorkR()
+void ProcessingWorker::doWorkR()
 {
     m_calibration->resetEvents();
 //    m_calibration->process();
@@ -54,7 +55,7 @@ void Worker::doWorkR()
     histToPointsAmpByGamma();
 }
 
-QVector<QPointF> Worker::histToPoints(TH1D *hist) {
+QVector<QPointF> ProcessingWorker::histToPoints(TH1D *hist) {
     QVector<QPointF> points;
     if (!hist) return points;
     for (int bin = 1; bin <= hist->GetNbinsX(); ++bin) {
@@ -65,7 +66,7 @@ QVector<QPointF> Worker::histToPoints(TH1D *hist) {
     return points;
 }
 
-void Worker::histToPointsTimeCorrectedByAlpha()
+void ProcessingWorker::histToPointsTimeCorrectedByAlpha()
 {
 
     QMap<QString, QList<QPointF>> data;
@@ -82,7 +83,7 @@ void Worker::histToPointsTimeCorrectedByAlpha()
     emit resultReadyTimeCorrectedByAlpha(data);
 }
 
-void Worker::histToPointsAmpByGamma()
+void ProcessingWorker::histToPointsAmpByGamma()
 {
 //    QMap<QString, QList<QPointF>> data;
 //    QMap<QString, QString> text;

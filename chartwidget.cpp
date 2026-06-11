@@ -28,23 +28,6 @@ ChartWidget::ChartWidget(QWidget *parent)
 
     m_chart = new QChart;
     m_chartView = new ChartView(m_chart, this);
-//    m_label = new QLabel(this);
-//    m_label->setContentsMargins(0, 0, 0, 0);
-//    m_label->setText(
-//                "<table width='100%' style='border-collapse: collapse;'>"
-//                     "<tr>"
-//                     "<td align='center'>"
-//                     "<b><font color='#e74c3c'>1</font></b>"
-//                     "</td>"
-//                     "<td align='center'>"
-//                     "<b>123123</b>"
-//                     "</td>"
-//                     "<td align='center'>"
-//                     "<b>1%</b>"
-//                     "</td>"
-//                     "</tr>"
-//                     "</table>"
-//                );
 
     QWidget *header = new QWidget(this);
     QHBoxLayout *headerLayout = new QHBoxLayout(header);

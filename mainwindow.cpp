@@ -12,8 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     m_settings = new Settings("settings.ini", this);
-
-    statusBar()->showMessage(m_settings->path());
+    m_path = m_settings->path();
 
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     QAction *openAction = fileMenu->addAction(tr("&Open..."), this, &MainWindow::openFile);
@@ -25,19 +24,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(quitAction, &QAction::triggered, this, &MainWindow::close);
 
     QWidget *widget = new QWidget;
-
     m_mainLayout = new QHBoxLayout(widget);
-
     setCentralWidget(widget);
+
     m_dialog = nullptr;
-    m_path = m_settings->path();
-//    m_path = "/misc/agpk_std/adcm.dat";
+
+
     m_fileWatcher = new FileWatcher(m_path);
     m_fileWatcher->moveToThread(&workerThread);
     m_fileWatcherTimer = new QTimer(this);
     m_fileWatcherTimer->setInterval(1000);
 
-    m_controller = new Controller(m_path);
+    m_statusMessageLabel = new QLabel(m_path, this);
+    statusBar()->addWidget(m_statusMessageLabel);
+    m_fileWatcherController = new FileWatcherController(m_path);
+    m_controller = new ProcessingController(m_path);
 
     m_pushButtonStartStop = new QPushButton("Start", this);
     m_pushButtonStartStop->setCheckable(true);
@@ -81,8 +82,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_mainLayout->addWidget(m_tabWidget);
 
 
-    connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
-    connect(m_controller, &Controller::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
+    connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &path){
+        qDebug() << path;
+        m_statusMessageLabel->setText(path);
+    });
+
+    connect(m_controller, &ProcessingController::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
+    connect(m_controller, &ProcessingController::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
     connect(&workerThread, &QThread::finished, m_fileWatcher, &QObject::deleteLater);
     connect(m_fileWatcherTimer, &QTimer::timeout, m_fileWatcher, &FileWatcher::operate);
 
@@ -102,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateR);
+    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &ProcessingController::operateR);
 
     workerThread.start();
 
@@ -314,16 +320,18 @@ void MainWindow::showDialog(QString title) {
 }
 
 void MainWindow::openFile() {
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open File"),
-        "",
-        tr("All Files (*.*);;ADCM Files (*.dat)"));
+//    QString fileName = QFileDialog::getOpenFileName(this,
+//        tr("Open File"),
+//        "",
+//        tr("All Files (*.*);;ADCM Files (*.dat)"));
 
-    if (fileName.isEmpty()) {
-        return;
-    }
-    m_path = fileName;
-    m_settings->setPath(m_path);
+//    if (fileName.isEmpty()) {
+//        return;
+//    }
+//    if (fileName != m_path) {
+//        m_path = fileName;
+//        m_settings->setPath(m_path);
+//    }
 }
 
 

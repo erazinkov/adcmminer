@@ -1,5 +1,5 @@
-#ifndef WORKER_H
-#define WORKER_H
+#ifndef PROCESSINGWORKER_H
+#define PROCESSINGWORKER_H
 
 #include <QObject>
 
@@ -20,11 +20,11 @@ public:
     Enums() = delete;
 };
 
-class Worker : public QObject
+class ProcessingWorker : public QObject
 {
     Q_OBJECT
 public:
-    Worker(const QString &);
+    explicit ProcessingWorker(const QString &, QObject *parent = nullptr);
 public slots:
     void doWorkS();
     void doWorkR();
@@ -42,4 +42,4 @@ private:
     QVector<QPointF> histToPoints(TH1D *hist);
 };
 
-#endif // WORKER_H
+#endif // PROCESSINGWORKER_H

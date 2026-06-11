@@ -1,25 +1,26 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef PROCESSINGCONTROLLER_H
+#define PROCESSINGCONTROLLER_H
 
 #include <QObject>
 #include <QThread>
 
-#include "worker.h"
+#include "processingworker.h"
 
-class Controller : public QObject
+class ProcessingController : public QObject
 {
     Q_OBJECT
-    QThread workerThread;
 public:
-    Controller(const QString &);
-    ~Controller() override;
-//public slots:
+    ProcessingController(const QString &);
+    ~ProcessingController() override;
 signals:
     void handleResultsTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
     void handleResultsAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
 
     void operateS();
     void operateR();
+private:
+    QThread *m_thread;
+    ProcessingWorker *m_worker;
 };
 
-#endif // CONTROLLER_H
+#endif // PROCESSINGCONTROLLER_H
