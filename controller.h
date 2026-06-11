@@ -16,9 +16,10 @@ public:
 //public slots:
 signals:
     void handleResultsTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
-    void handleResultsAmpByGamma(const QMap<QString, QList<QPointF>> &);
-signals:
+    void handleResultsAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+
     void operateS();
+    void operateR();
 };
 
 #endif // CONTROLLER_H

@@ -48,6 +48,8 @@ public:
 
     const std::vector<TH1D *> &histsEnergyByGamma() const;
 
+    const std::vector<TH1D *> &histsEnergyByAlpha() const;
+
 private:
     const int gammaNumber_;
     const int alphaNumber_;
@@ -83,6 +85,7 @@ private:
     std::vector<std::vector<TH1D *>> histsEnergyByGammaAlphaSg_;
     std::vector<std::vector<TH1D *>> histsEnergyByGammaAlphaBg_;
     std::vector<TH1D *> histsEnergyByGamma_;
+    std::vector<TH1D *> histsEnergyByAlpha_;
 };
 
 #endif // HISTOGRAMMANAGER_H

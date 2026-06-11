@@ -24,7 +24,7 @@ public:
 
 private slots:
     void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
-    void newDataAmpByGamma(const QMap<QString, QList<QPointF>> &);
+    void newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
 
     void setupTimeCorrectedByAlpha();
     void setupAmpByGamma(const int gammaNumber = AppConstants::MAX_GAMMA_NUMBER);
@@ -45,8 +45,8 @@ private:
     QMap<QString, QList<QPointF>> m_dataAmpByGamma;
 
     QTimer *m_fileWatcherTimer;
-    QPushButton *m_pushButton;
-    QPushButton *m_pushButton1;
+    QPushButton *m_pushButtonStartStop;
+    QPushButton *m_pushButtonReset;
     Controller *m_controller;
 
     QTabWidget *m_tabWidget;

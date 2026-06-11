@@ -16,6 +16,7 @@ public:
 
     void process();
     void setNewEvents(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> &newEventsM, const dec_ch_t &channels);
+    void resetEvents();
     HistogramManager *histogramManager;
 private:
 
@@ -27,6 +28,7 @@ private:
     std::vector<EnergyPeak>  energyPeaksRaw_;
 
     PeakFinder peakFinder_;
+
 
     void fillHistTime(const std::vector<dec_ev_m_t> &events, TH1 *h, double correction);
     void fillHistAmp(const std::vector<dec_ev_m_t> &events, TH1 *h, double minT, double maxT, bool exclude);
@@ -48,6 +50,8 @@ private:
                                   const std::vector<std::vector<TH1D *> > &histsBg);
 
     void fillHistsEnergyByGamma(const std::vector<std::vector<TH1D *> > &histsSg,
+                                  const std::vector<std::vector<TH1D *> > &histsBg);
+    void fillHistsEnergyByAlpha(const std::vector<std::vector<TH1D *> > &histsSg,
                                   const std::vector<std::vector<TH1D *> > &histsBg);
 
 

@@ -120,6 +120,13 @@ HistogramManager::HistogramManager(const int &gammaNumber, const int &alphaNumbe
         TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_ENERGY, XLOW_ENERGY, XUP_ENERGY);
         histsEnergyByGamma_[ig] = h;
     }
+    histsEnergyByAlpha_.resize(alphaNumber_);
+    for (auto ia{0}; ia < alphaNumber_; ia++) {
+        std::string name{Form("hist_energy_by_alpha_%d", ia)};
+        std::string title{Form("hist_energy_by_alpha_%d", ia)};
+        TH1D *h = new TH1D(name.c_str(), title.c_str(), BINS_ENERGY, XLOW_ENERGY, XUP_ENERGY);
+        histsEnergyByAlpha_[ia] = h;
+    }
 }
 
 HistogramManager::~HistogramManager()
@@ -146,6 +153,8 @@ HistogramManager::~HistogramManager()
             histsAmpByAlpha_[ia] = nullptr;
             delete histsTimeCorrectedByAlpha_[ia];
             histsTimeCorrectedByAlpha_[ia] = nullptr;
+            delete histsEnergyByAlpha_[ia];
+            histsEnergyByAlpha_[ia] = nullptr;
     }
     for (auto ig{0}; ig < gammaNumber_; ig++) {
             delete histsAmpByGamma_[ig];
@@ -326,4 +335,9 @@ const std::vector<std::vector<TH1D *> > &HistogramManager::histsEnergyByGammaAlp
 const std::vector<TH1D *> &HistogramManager::histsEnergyByGamma() const
 {
     return histsEnergyByGamma_;
+}
+
+const std::vector<TH1D *> &HistogramManager::histsEnergyByAlpha() const
+{
+    return histsEnergyByAlpha_;
 }

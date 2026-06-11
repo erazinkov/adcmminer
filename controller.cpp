@@ -6,6 +6,7 @@ Controller::Controller(const QString &path)
     worker->moveToThread(&workerThread);
     connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
     connect(this, &Controller::operateS, worker, &Worker::doWorkS);
+    connect(this, &Controller::operateR, worker, &Worker::doWorkR);
     connect(worker, &Worker::resultReadyTimeCorrectedByAlpha, this, &Controller::handleResultsTimeCorrectedByAlpha);
     connect(worker, &Worker::resultReadyAmpByGamma, this, &Controller::handleResultsAmpByGamma);
     workerThread.start();

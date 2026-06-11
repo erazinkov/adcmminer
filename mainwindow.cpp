@@ -6,11 +6,6 @@
 #include "calibration.h"
 #include "datadelegate.h"
 
-#include <Q3DSurface>
-
-
-
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -20,7 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_mainLayout = new QHBoxLayout(widget);
     setCentralWidget(widget);
     m_dialog = nullptr;
-    m_path = "/home/egor/build-adcmemulate-Desktop-Debug/adcm.dat";
+    m_path = AppConstants::PATH;
+//    m_path = "/misc/agpk_std/adcm.dat";
     m_fileWatcher = new FileWatcher(m_path);
     m_fileWatcher->moveToThread(&workerThread);
     m_fileWatcherTimer = new QTimer(this);
@@ -28,10 +24,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_controller = new Controller(m_path);
 
-    m_pushButton = new QPushButton("Start", this);
-    m_pushButton->setCheckable(true);
+    m_pushButtonStartStop = new QPushButton("Start", this);
+    m_pushButtonStartStop->setCheckable(true);
 
-    m_pushButton1 = new QPushButton("Button1", this);
+    m_pushButtonReset = new QPushButton("Reset", this);
 
 
 
@@ -41,8 +37,25 @@ MainWindow::MainWindow(QWidget *parent)
     m_gLleft = new QGridLayout(m_widgetLeft);
 //    m_gLright = new QGridLayout(m_widgetRight);
 
-    m_gLleft->addWidget(m_pushButton, 0, 0);
-    m_gLleft->addWidget(m_pushButton1, 0, 1);
+    m_gLleft->addWidget(m_pushButtonStartStop, 0, 0);
+    m_pushButtonStartStop->setStyleSheet(
+        "QPushButton {"
+        "   color: white;"
+        "}"
+        "QPushButton:checked {"
+        "   background-color: #d32f2f;"
+        "}"
+        "QPushButton:checked:hover {"
+        "   background-color: #f44336;"
+        "}"
+        "QPushButton:!checked {"
+        "   background-color: #388e3c;"
+        "}"
+        "QPushButton:!checked:hover {"
+        "   background-color: #4caf50;"
+        "}"
+    );
+    m_gLleft->addWidget(m_pushButtonReset, 1, 0);
 
     m_tabWidget = new QTabWidget(m_widgetRight);
     m_page_1 = new QWidget;
@@ -64,20 +77,17 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
 
-    connect(m_pushButton, &QPushButton::toggled, [this](bool checked){
+    connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
         if (checked) {
-            m_pushButton->setText("Stop");
+            m_pushButtonStartStop->setText("Stop");
             m_fileWatcherTimer->start();
         } else {
-            m_pushButton->setText("Start");
+            m_pushButtonStartStop->setText("Start");
             m_fileWatcherTimer->stop();
         }
     });
 
-    connect(m_pushButton, &QPushButton::clicked, [this](){
-
-    });
-
+    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateR);
 
     workerThread.start();
 
@@ -142,18 +152,21 @@ void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>>
 //    }
 }
 
-void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data)
+void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
 {
     qDebug() << "newDataAmpByGamma - received";
     if (data.size() != m_dataAmpByGamma.size()) {
         setupAmpByGamma(data.size());
     }
     m_dataAmpByGamma.clear();
+    QList<QStringList> t;
     for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
     {
         m_dataAmpByGamma.insert(i.key(), i.value());
+        t.append(text[i.key()]);
     }
     m_seriesAmpByGamma.clear();
+
     auto dataColor{QColorConstants::Green};
     for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
     {
@@ -175,12 +188,18 @@ void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data)
         areaSeries->setColor(dataColor);
         areaSeries->setName(i.key());
         m_seriesAmpByGamma.append(areaSeries);
+
     }
+
+    qDebug() << text;
 
     for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
     {
-        m_chartWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
+//        m_chartWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
+//        m_chartWidgetsAmpByGamma.at(i)->setTitle("");
+
         m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
+        m_chartWidgetsAmpByGamma.at(i)->setHeader(t.at(i));
     }
 
 //    for (auto i{0}; i < m_mainWidgetList.size(); ++i)

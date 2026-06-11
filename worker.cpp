@@ -46,6 +46,14 @@ void Worker::doWorkS()
     std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
 }
 
+void Worker::doWorkR()
+{
+    m_calibration->resetEvents();
+//    m_calibration->process();
+    histToPointsTimeCorrectedByAlpha();
+    histToPointsAmpByGamma();
+}
+
 QVector<QPointF> Worker::histToPoints(TH1D *hist) {
     QVector<QPointF> points;
     if (!hist) return points;
@@ -76,18 +84,48 @@ void Worker::histToPointsTimeCorrectedByAlpha()
 
 void Worker::histToPointsAmpByGamma()
 {
+//    QMap<QString, QList<QPointF>> data;
+//    QMap<QString, QString> text;
+//    for (ulong i{0}; i < m_decoder->channels().g.size(); ++i) {
+//        TH1 *h;
+//        h = m_calibration->histogramManager->histsEnergyByGamma()[i];
+//        m_dataDelegate->histToData(h);
+//        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
+//        {
+//            data.insert(j.key(), j.value());
+//            text.insert(j.key(), QString("<b>%1</b><br/>").arg(qRound(h->Integral())));
+
+//        }
+//    }
+
+//    emit resultReadyAmpByGamma(data, text);
+
     QMap<QString, QList<QPointF>> data;
-    for (ulong i{0}; i < m_decoder->channels().g.size(); ++i) {
+    QMap<QString, QStringList> text;
+    double s{0.0};
+    for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
-        h = m_calibration->histogramManager->histsEnergyByGamma()[i];
+        h = m_calibration->histogramManager->histsEnergyByAlpha()[i];
+        s += h->Integral();
+        h = nullptr;
+    }
+
+    for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
+        TH1 *h;
+        h = m_calibration->histogramManager->histsEnergyByAlpha()[i];
         m_dataDelegate->histToData(h);
-        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
-        {
+        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j) {
             data.insert(j.key(), j.value());
+            text.insert(j.key(), {
+                            QString("<h1><font color='#e74c3c'>%1</font></h1>").arg(i),
+                            QString("<h2>%1</h2>").arg(qRound(h->Integral())),
+                            QString("<h2>%1</h2>").arg(qRound(100.0 * h->Integral() / (s < 1.0 ? 1.0 : s )))
+                        });
+            h = nullptr;
         }
     }
 
-    emit resultReadyAmpByGamma(data);
+    emit resultReadyAmpByGamma(data, text);
 }
 
 //    void Worker::doDataDelegateWork(const QString &parameter)

@@ -26,6 +26,8 @@ class ChartWidget : public QWidget
 public:
     explicit ChartWidget(QWidget *parent = nullptr);
 
+    void setHeader(const QStringList &newData);
+
 signals:
     void hovered(QString);
 
@@ -46,8 +48,10 @@ private:
     ChartView *m_chartView;
 //    QGridLayout *m_mainLayout;
     MousePressEater *m_mousePressEater;
+    QStringList m_sL;
+    QList<QLabel *> m_headerLabels;
 //    QGraphicsDropShadowEffect *m_shadowEffect;
-
+//    QLabel *m_label;
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override {
         if (event->type() == QEvent::HoverEnter) {

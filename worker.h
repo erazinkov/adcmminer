@@ -27,10 +27,10 @@ public:
     Worker(const QString &);
 public slots:
     void doWorkS();
-
+    void doWorkR();
 signals:
     void resultReadyTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
-    void resultReadyAmpByGamma(const QMap<QString, QList<QPointF>> &);
+    void resultReadyAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
 private:
     Decoder *m_decoder;
     DataDelegate *m_dataDelegate;
