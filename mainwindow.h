@@ -2,9 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QThread>
 
-#include "filewatcher.h"
 #include "chartwidget.h"
 #include "processingcontroller.h"
 #include "constants.h"
@@ -19,7 +17,6 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    QThread workerThread;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
@@ -39,10 +36,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Settings *m_settings;
-    FileWatcher *m_fileWatcher;
     QString m_path;
     QLabel *m_statusMessageLabel;
-
 
     QList<ChartWidget *> m_chartWidgetsTimeCorrectedByAlpha;
     QList<QAbstractSeries *> m_seriesTimeCorrectesByAlpha;
@@ -52,10 +47,9 @@ private:
     QList<QAbstractSeries *> m_seriesAmpByGamma;
     QMap<QString, QList<QPointF>> m_dataAmpByGamma;
 
-    QTimer *m_fileWatcherTimer;
     QPushButton *m_pushButtonStartStop;
     QPushButton *m_pushButtonReset;
-    ProcessingController *m_controller;
+    ProcessingController *m_processingController;
     FileWatcherController *m_fileWatcherController;
 
     QTabWidget *m_tabWidget;

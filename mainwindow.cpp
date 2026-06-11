@@ -29,16 +29,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_dialog = nullptr;
 
-
-    m_fileWatcher = new FileWatcher(m_path);
-    m_fileWatcher->moveToThread(&workerThread);
-    m_fileWatcherTimer = new QTimer(this);
-    m_fileWatcherTimer->setInterval(1000);
-
-    m_statusMessageLabel = new QLabel("", this);
+    m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)), this);
     statusBar()->addWidget(m_statusMessageLabel);
     m_fileWatcherController = new FileWatcherController(m_path);
-    m_controller = new ProcessingController(m_path);
+    m_processingController = new ProcessingController(m_path);
 
     m_pushButtonStartStop = new QPushButton("Start", this);
     m_pushButtonStartStop->setCheckable(true);
@@ -85,51 +79,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &path, const bool &isModified){
         m_statusMessageLabel->setText(path);
-        if (isModified) {
-            m_controller->operateS();
+        if (isModified && m_pushButtonStartStop->isChecked()) {
+            m_processingController->operateS();
         }
     });
 
-    connect(m_controller, &ProcessingController::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
-    connect(m_controller, &ProcessingController::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
-    connect(&workerThread, &QThread::finished, m_fileWatcher, &QObject::deleteLater);
-    connect(m_fileWatcherTimer, &QTimer::timeout, m_fileWatcher, &FileWatcher::operate);
+    connect(m_processingController, &ProcessingController::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
+    connect(m_processingController, &ProcessingController::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
+    connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){m_pushButtonStartStop->setText(checked ? "Stop" : "Start");});
+    connect(m_pushButtonReset, &QPushButton::clicked, m_processingController, &ProcessingController::operateR);
 
-    connect(m_fileWatcher, &FileWatcher::onFileChanged, [this](const QString &path){
-        qInfo() << path;
-        m_controller->operateS();
-    });
-
-
-    connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
-        if (checked) {
-            m_pushButtonStartStop->setText("Stop");
-            m_fileWatcherTimer->start();
-        } else {
-            m_pushButtonStartStop->setText("Start");
-            m_fileWatcherTimer->stop();
-        }
-    });
-
-    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &ProcessingController::operateR);
-
-    workerThread.start();
 
     setupTimeCorrectedByAlpha();
     setupAmpByGamma();
 
-//    onCurrentTextChanged(m_comboBox->currentText());
 }
 
 MainWindow::~MainWindow()
 {
-
-    if (m_fileWatcherTimer != nullptr) {
-        m_fileWatcherTimer->stop();
-    }
-    workerThread.quit();
-    workerThread.wait();
-
     m_settings->writeSettings();
     delete ui;
 }

@@ -16,7 +16,7 @@ void FileWatcherWorker::doWorkFC()
         const auto p{m_fileInfo->lastModified()};
         m_fileInfo->refresh();
         const auto n{m_fileInfo->lastModified()};
-        isModified = p == n;
+        isModified = p != n;
     } else {
         r.append(QString("<span style='color: red;'>%1</span> %2").arg(QChar(0x2718)).arg(m_fileInfo->absoluteFilePath()));
     }
