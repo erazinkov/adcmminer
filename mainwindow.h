@@ -57,7 +57,7 @@ private:
     QWidget *m_page_1;
     QWidget *m_page_2;
 
-    QHBoxLayout *m_mainLayout;
+//    QHBoxLayout *m_mainLayout;
 
     QWidget *m_widgetLeft;
     QWidget *m_widgetRight;

@@ -23,9 +23,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(quitAction, &QAction::triggered, this, &MainWindow::close);
 
-    QWidget *widget = new QWidget;
-    m_mainLayout = new QHBoxLayout(widget);
-    setCentralWidget(widget);
+    QSplitter *widget = new QSplitter(this);
+
+//    m_mainLayout = new QHBoxLayout(widget);
+
 
     m_dialog = nullptr;
 
@@ -34,14 +35,15 @@ MainWindow::MainWindow(QWidget *parent)
     m_fileWatcherController = new FileWatcherController(m_path);
     m_processingController = new ProcessingController();
 
-    m_pushButtonStartStop = new QPushButton("Start", this);
-    m_pushButtonStartStop->setCheckable(true);
 
-    m_pushButtonReset = new QPushButton("Reset", this);
 
 
 
     m_widgetLeft = new QWidget(widget);
+    m_pushButtonStartStop = new QPushButton("Start");
+    m_pushButtonStartStop->setCheckable(true);
+
+    m_pushButtonReset = new QPushButton("Reset");
     m_widgetRight = new QWidget(widget);
 
     m_gLleft = new QGridLayout(m_widgetLeft);
@@ -73,8 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_tabWidget->addTab(m_page_1, "TimeByAlpha");
     m_page_2 = new QWidget;
     m_tabWidget->addTab(m_page_2, "AmpByGamma");
-    m_mainLayout->addWidget(m_widgetLeft);
-    m_mainLayout->addWidget(m_tabWidget);
+    widget->addWidget(m_widgetLeft);
+    widget->addWidget(m_tabWidget);
 
 
     connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &message, const QString &path, const bool &isModified){
@@ -90,9 +92,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_pushButtonReset, &QPushButton::clicked, m_processingController, &ProcessingController::operateR);
 
 
+
+
     setupTimeCorrectedByAlpha();
     setupAmpByGamma();
 
+    setCentralWidget(widget);
 }
 
 MainWindow::~MainWindow()
