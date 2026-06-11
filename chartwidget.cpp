@@ -8,7 +8,7 @@ ChartWidget::ChartWidget(QWidget *parent)
     : QWidget{parent}
 {
     m_sL = {
-        "<h1><font color='#e74c3c'>?</font></h1>", "<h2>?</h2>", "<h2>?</h2>"
+        "<h2><font color='red'>?</font></h2>", "<h3>?</h3>", "<h3>?</h3>"
     };
     setAttribute(Qt::WA_Hover);
     installEventFilter(this);

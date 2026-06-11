@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_fileWatcherTimer = new QTimer(this);
     m_fileWatcherTimer->setInterval(1000);
 
-    m_statusMessageLabel = new QLabel(m_path, this);
+    m_statusMessageLabel = new QLabel("", this);
     statusBar()->addWidget(m_statusMessageLabel);
     m_fileWatcherController = new FileWatcherController(m_path);
     m_controller = new ProcessingController(m_path);
@@ -59,18 +59,19 @@ MainWindow::MainWindow(QWidget *parent)
         "   color: white;"
         "}"
         "QPushButton:checked {"
-        "   background-color: #d32f2f;"
+        "   background-color: red;"
         "}"
         "QPushButton:checked:hover {"
-        "   background-color: #f44336;"
+        "   background-color: coral;"
         "}"
         "QPushButton:!checked {"
-        "   background-color: #388e3c;"
+        "   background-color: green;"
         "}"
         "QPushButton:!checked:hover {"
-        "   background-color: #4caf50;"
+        "   background-color: lime;"
         "}"
     );
+
     m_gLleft->addWidget(m_pushButtonReset, 1, 0);
 
     m_tabWidget = new QTabWidget(m_widgetRight);
@@ -82,9 +83,11 @@ MainWindow::MainWindow(QWidget *parent)
     m_mainLayout->addWidget(m_tabWidget);
 
 
-    connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &path){
-        qDebug() << path;
+    connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &path, const bool &isModified){
         m_statusMessageLabel->setText(path);
+        if (isModified) {
+            m_controller->operateS();
+        }
     });
 
     connect(m_controller, &ProcessingController::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
@@ -320,18 +323,17 @@ void MainWindow::showDialog(QString title) {
 }
 
 void MainWindow::openFile() {
-//    QString fileName = QFileDialog::getOpenFileName(this,
-//        tr("Open File"),
-//        "",
-//        tr("All Files (*.*);;ADCM Files (*.dat)"));
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open File"),
+        "",
+        tr("ADCM Files (*.dat);;All Files (*.*)"));
 
-//    if (fileName.isEmpty()) {
-//        return;
-//    }
-//    if (fileName != m_path) {
-//        m_path = fileName;
-//        m_settings->setPath(m_path);
-//    }
+    if (fileName.isEmpty()) {
+        return;
+    }
+    m_path = fileName;
+    m_fileWatcherController->operateP(m_path);
+    m_settings->setPath(m_path);
 }
 
 

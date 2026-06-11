@@ -118,9 +118,9 @@ void ProcessingWorker::histToPointsAmpByGamma()
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j) {
             data.insert(j.key(), j.value());
             text.insert(j.key(), {
-                            QString("<h1><font color='#e74c3c'>%1</font></h1>").arg(i),
-                            QString("<h2>%1</h2>").arg(qRound(h->Integral())),
-                            QString("<h2>%1</h2>").arg(qRound(100.0 * h->Integral() / (s < 1.0 ? 1.0 : s )))
+                            QString("<h2><font color='red'>%1</font></h2>").arg(i),
+                            QString("<h3>%1</h3>").arg(qRound(h->Integral())),
+                            QString("<h3>%1</h3>").arg(qRound(100.0 * h->Integral() / (s < 1.0 ? 1.0 : s )))
                         });
             h = nullptr;
         }
