@@ -129,47 +129,59 @@ void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>>
 void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
 {
     qDebug() << "newDataAmpByGamma - received";
-    if (data.size() != m_dataAmpByGamma.size()) {
+    if (data.size() != m_histChartWidgetsEnergyByGamma.size()) {
         setupAmpByGamma(data.size());
     }
-    m_dataAmpByGamma.clear();
     QList<QStringList> t;
-    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
-    {
-        m_dataAmpByGamma.insert(i.key(), i.value());
+    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i){
         t.append(text[i.key()]);
     }
-    m_seriesAmpByGamma.clear();
-
-    auto dataColor{QColorConstants::Green};
-    for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
-    {
-        QLineSeries *series = new QLineSeries();
-        series->append(i.value());
-        series->setName(i.key());
-        QAreaSeries *areaSeries = new QAreaSeries(series);
-        QPen pen;
-        pen.setWidth(1);
-        pen.setColor(dataColor);
-        areaSeries->setPen(pen);
-        areaSeries->setColor(dataColor);
-        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-        dataGradient.setColorAt(0.0, dataColor);
-        dataGradient.setColorAt(1.0, dataColor.lighter());
-        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-        areaSeries->setOpacity(0.75);
-        areaSeries->setBrush(dataGradient);
-        areaSeries->setColor(dataColor);
-        areaSeries->setName(i.key());
-        m_seriesAmpByGamma.append(areaSeries);
-
+    auto j{0};
+    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i) {
+        if (j < m_histChartWidgetsEnergyByGamma.size()) {
+            m_histChartWidgetsEnergyByGamma.at(j)->setHeader(text[i.key()]);
+            m_histChartWidgetsEnergyByGamma.at(j)->setData(i.key(), i.value());
+        }
+        j++;
     }
+//    m_dataAmpByGamma.clear();
+//    QList<QStringList> t;
+//    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
+//    {
+//        m_dataAmpByGamma.insert(i.key(), i.value());
+//        t.append(text[i.key()]);
+//    }
+//    m_seriesAmpByGamma.clear();
 
-    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
-    {
-        m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
-        m_chartWidgetsAmpByGamma.at(i)->setHeader(t.at(i));
-    }
+//    auto dataColor{QColorConstants::Green};
+//    for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
+//    {
+//        QLineSeries *series = new QLineSeries();
+//        series->append(i.value());
+//        series->setName(i.key());
+//        QAreaSeries *areaSeries = new QAreaSeries(series);
+//        QPen pen;
+//        pen.setWidth(1);
+//        pen.setColor(dataColor);
+//        areaSeries->setPen(pen);
+//        areaSeries->setColor(dataColor);
+//        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
+//        dataGradient.setColorAt(0.0, dataColor);
+//        dataGradient.setColorAt(1.0, dataColor.lighter());
+//        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+//        areaSeries->setOpacity(0.75);
+//        areaSeries->setBrush(dataGradient);
+//        areaSeries->setColor(dataColor);
+//        areaSeries->setName(i.key());
+//        m_seriesAmpByGamma.append(areaSeries);
+
+//    }
+
+//    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
+//    {
+//        m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
+//        m_chartWidgetsAmpByGamma.at(i)->setHeader(t.at(i));
+//    }
 }
 
 void MainWindow::newDataProcessing(const QMap<QString, double> &data)
@@ -209,21 +221,21 @@ void MainWindow::setupAmpByGamma(const int gammaNumber)
     if (m_page_2->layout()) {
         delete m_page_2->layout();
     }
-    for (auto i{0}; i < m_chartWidgetsAmpByGamma.size(); ++i) {
-        m_chartWidgetsAmpByGamma.at(i)->deleteLater();
+    for (auto i{0}; i < m_histChartWidgetsEnergyByGamma.size(); ++i) {
+        m_histChartWidgetsEnergyByGamma.at(i)->deleteLater();
     }
     m_page_2->setLayout(new QGridLayout());
     static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
-    m_chartWidgetsAmpByGamma.resize(gammaNumber);
+    m_histChartWidgetsEnergyByGamma.resize(gammaNumber);
     auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(gammaNumber)))};
     auto index{0};
     for (auto ir{0}; ir < cd; ++ir) {
         for (auto ic{0}; ic < cd; ++ic) {
-            if (index < m_chartWidgetsAmpByGamma.size()) {
-                m_chartWidgetsAmpByGamma[index] = new ChartWidget;
+            if (index < m_histChartWidgetsEnergyByGamma.size()) {
+                m_histChartWidgetsEnergyByGamma[index] = new HistChartWidget(0.0, 8'000.0);
 //                connect(m_chartWidgetsAmpByGamma[index], &ChartWidget::hovered, this, &MainWindow::showDialog);
-                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_chartWidgetsAmpByGamma.at(index), ir, ic);
+                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_histChartWidgetsEnergyByGamma.at(index), ir, ic);
                 index++;
             }
         }

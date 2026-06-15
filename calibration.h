@@ -12,14 +12,14 @@
 class Calibration
 {
 public:
-    Calibration();
+    Calibration(const HistogramManager *histogramManager);
 
     void process();
     void setNewEvents(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> &newEventsM, const dec_ch_t &channels);
     void resetEvents();
-    HistogramManager *histogramManager;
+//    HistogramManager *histogramManager;
 private:
-
+    const HistogramManager *m_histogramManager;
     std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> events_m_;
     std::map<std::pair<uint8_t, uint8_t>, double> timeCorrections_;
     dec_ch_t channels_;

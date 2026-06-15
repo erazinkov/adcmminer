@@ -1,11 +1,15 @@
 #include "processingworker.h"
 
+#include "constants.h"
+
 ProcessingWorker::ProcessingWorker(QObject *parent)
     : QObject{parent}
 {
     m_decoder = new Decoder;
-    m_calibration = new Calibration;
+    m_histogramManager = new HistogramManager(AppConstants::MAX_GAMMA_NUMBER, AppConstants::MAX_ALPHA_NUMBER);
+    m_calibration = new Calibration(m_histogramManager);
     m_dataDelegate = new DataDelegate;
+
 }
 
 void ProcessingWorker::doWorkS(const QString &path)
@@ -77,7 +81,7 @@ void ProcessingWorker::histToPointsTimeCorrectedByAlpha()
     QMap<QString, QList<QPointF>> data;
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
-        h = m_calibration->histogramManager->histsTimeCorrectedByAlpha()[i];
+        h = m_histogramManager->histsTimeCorrectedByAlpha()[i];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {
@@ -111,14 +115,14 @@ void ProcessingWorker::histToPointsAmpByGamma()
     double s{0.0};
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
-        h = m_calibration->histogramManager->histsEnergyByAlpha()[i];
+        h = m_histogramManager->histsEnergyByAlpha()[i];
         s += h->Integral();
         h = nullptr;
     }
 
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
-        h = m_calibration->histogramManager->histsEnergyByAlpha()[i];
+        h = m_histogramManager->histsEnergyByAlpha()[i];
         m_dataDelegate->histToData(h);
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j) {
             data.insert(j.key(), j.value());

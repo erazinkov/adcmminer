@@ -48,14 +48,12 @@ private:
     QList<QAbstractSeries *> m_seriesTimeCorrectesByAlpha;
     QMap<QString, QList<QPointF>> m_dataTimeCorrectedByAlpha;
 
-    QList<ChartWidget *> m_chartWidgetsAmpByGamma;
+//    QList<ChartWidget *> m_chartWidgetsAmpByGamma;
     QList<QAbstractSeries *> m_seriesAmpByGamma;
     QMap<QString, QList<QPointF>> m_dataAmpByGamma;
 
     QPushButton *m_pushButtonStartStop;
     QPushButton *m_pushButtonReset;
-//    ProcessingController *m_processingController;
-//    FileWatcherController *m_fileWatcherController;
 
     Controller *m_controller;
 
@@ -77,6 +75,7 @@ private:
 
     ProcessingChartWidget *m_processingChartWidget;
     QList<HistChartWidget *> m_histChartWidgetsTimeCorrectedByAlpha;
+    QList<HistChartWidget *> m_histChartWidgetsEnergyByGamma;
 
 };
 #endif // MAINWINDOW_H

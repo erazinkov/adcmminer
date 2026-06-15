@@ -53,7 +53,7 @@ void HistChartWidget::setData(const QString &title, const QList<QPointF> &points
     if (points.isEmpty()) {
         return;
     }
-    m_chart->setTitle(title);
+    m_chart->setTitle("");
     auto pointsMaxY = std::max_element(points.constBegin(), points.constEnd(),
             [](const QPointF &a, const QPointF &b) {
                 return a.y() < b.y();

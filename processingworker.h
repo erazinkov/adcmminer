@@ -35,6 +35,7 @@ signals:
 private:
     Decoder *m_decoder;
     DataDelegate *m_dataDelegate;
+    HistogramManager *m_histogramManager;
     Calibration *m_calibration;
 
     void histToPointsTimeCorrectedByAlpha();
