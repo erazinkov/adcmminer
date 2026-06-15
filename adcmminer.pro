@@ -19,6 +19,7 @@ SOURCES += \
     filewatchercontroller.cpp \
     filewatcherworker.cpp \
     flowlayout.cpp \
+    histchartwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     mousepresseater.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
     filewatchercontroller.h \
     filewatcherworker.h \
     flowlayout.h \
+    histchartwidget.h \
     mainwindow.h \
     mousepresseater.h \
     processingchartwidget.h \
