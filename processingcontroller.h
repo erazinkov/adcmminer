@@ -15,6 +15,7 @@ public:
 signals:
     void handleResultsTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
     void handleResultsAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+    void handleResultsProcessing(const QMap<QString, double> &data);
 
     void operateS(const QString &);
     void operateR();

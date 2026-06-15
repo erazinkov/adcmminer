@@ -21,6 +21,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     mousepresseater.cpp \
+    processingchartwidget.cpp \
     processingcontroller.cpp \
     histogrammanager.cpp \
     peakfinder.cpp \
@@ -28,7 +29,8 @@ SOURCES += \
     chartview.cpp \
     piecewiselinearfunction.cpp \
     processingworker.cpp \
-    settings.cpp
+    settings.cpp \
+    myspinnerwidget.cpp
 
 INCLUDEPATH += $$system(root-config --incdir)
 LIBS += $$system(root-config --libs) -lMinuit -lSpectrum
@@ -47,6 +49,7 @@ HEADERS += \
     flowlayout.h \
     mainwindow.h \
     mousepresseater.h \
+    processingchartwidget.h \
     processingcontroller.h \
     processingworker.h \
     utils.h \
@@ -55,7 +58,8 @@ HEADERS += \
     energypeak.h \
     chartview.h \
     piecewiselinearfunction.h \
-    settings.h
+    settings.h \
+    myspinnerwidget.h
 
 FORMS += \
     mainwindow.ui

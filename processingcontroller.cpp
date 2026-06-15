@@ -10,6 +10,7 @@ ProcessingController::ProcessingController()
     connect(this, &ProcessingController::operateR, m_worker, &ProcessingWorker::doWorkR);
     connect(m_worker, &ProcessingWorker::resultReadyTimeCorrectedByAlpha, this, &ProcessingController::handleResultsTimeCorrectedByAlpha);
     connect(m_worker, &ProcessingWorker::resultReadyAmpByGamma, this, &ProcessingController::handleResultsAmpByGamma);
+    connect(m_worker, &ProcessingWorker::resultReadyProcessing, this, &ProcessingController::handleResultsProcessing);
 
     connect(m_thread, &QThread::finished, m_worker, &QObject::deleteLater);
 

@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "settings.h"
 #include "filewatchercontroller.h"
+#include "processingchartwidget.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -25,9 +26,11 @@ public:
 private slots:
     void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
     void newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+    void newDataProcessing(const QMap<QString, double> &data);
 
     void setupTimeCorrectedByAlpha();
     void setupAmpByGamma(const int gammaNumber = AppConstants::MAX_GAMMA_NUMBER);
+    void setupProcessing();
 
     void showDialog(QString);
 
@@ -56,6 +59,7 @@ private:
 
     QWidget *m_page_1;
     QWidget *m_page_2;
+    QWidget *m_page_3;
 
     QWidget *m_mainWidget;
     QGridLayout *m_mainLayout;
@@ -66,6 +70,8 @@ private:
     QGridLayout *m_gLleft;
     QGridLayout *m_gLright;
     QDialog *m_dialog;
+
+    ProcessingChartWidget *m_processingChartWidget;
 
 };
 #endif // MAINWINDOW_H

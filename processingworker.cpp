@@ -10,9 +10,11 @@ ProcessingWorker::ProcessingWorker(QObject *parent)
 
 void ProcessingWorker::doWorkS(const QString &path)
 {
+    QMap<QString, double> m;
     auto start = std::chrono::steady_clock::now();
     std::cout << "Started!" << std::endl;
     m_decoder->process(path.toStdString());
+
 //    std::cout << "Events with 2 pulses: " << m_decoder->events().size() << std::endl;
 //    std::cout << "Events with 1 pulse: " << m_decoder->events_1().size() << std::endl;
 //    std::cout << "Counters: " << m_decoder->counters().rawhits.size() << " " << m_decoder->counters().time << std::endl;
@@ -29,6 +31,7 @@ void ProcessingWorker::doWorkS(const QString &path)
     std::cout << "Finished!" << std::endl;
     auto stop = std::chrono::steady_clock::now();
     std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+    m.insert("Decode", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
 //    m_data.clear();
 //    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
 //    m_calibration->setNewEvents(m_data, m_decoder->channels());
@@ -40,11 +43,14 @@ void ProcessingWorker::doWorkS(const QString &path)
     m_calibration->process();
     stop = std::chrono::steady_clock::now();
     std::cout << "process Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+    m.insert("Calibration", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
     start = std::chrono::steady_clock::now();
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
     stop = std::chrono::steady_clock::now();
     std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+    m.insert("Hists", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
+    emit resultReadyProcessing(m);
 }
 
 void ProcessingWorker::doWorkR()

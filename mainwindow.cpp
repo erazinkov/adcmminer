@@ -6,6 +6,8 @@
 #include "calibration.h"
 #include "datadelegate.h"
 
+#include "processingchartwidget.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -45,10 +47,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_gLright = new QGridLayout(m_widgetRight);
 
     m_tabWidget = new QTabWidget(m_widgetRight);
+
     m_page_1 = new QWidget;
     m_tabWidget->addTab(m_page_1, "TimeByAlpha");
     m_page_2 = new QWidget;
     m_tabWidget->addTab(m_page_2, "AmpByGamma");
+    m_page_3 = new QWidget;
+    m_tabWidget->addTab(m_page_3, "Processing");
     m_gLright->addWidget(m_tabWidget);
 
     splitterWidget->addWidget(m_widgetLeft);
@@ -90,6 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_processingController, &ProcessingController::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
     connect(m_processingController, &ProcessingController::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
+    connect(m_processingController, &ProcessingController::handleResultsProcessing, this, &MainWindow::newDataProcessing);
     connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
         qDebug() << checked;
         m_pushButtonStartStop->setText(checked ? "Stop" : "Start");
@@ -98,6 +104,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupTimeCorrectedByAlpha();
     setupAmpByGamma();
+    setupProcessing();
 }
 
 MainWindow::~MainWindow()
@@ -203,12 +210,17 @@ void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, co
 //    {
 //        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
 //        m_mainWidgetList.at(i)->process({m_series.at(i)});
-//    }
+    //    }
+}
+
+void MainWindow::newDataProcessing(const QMap<QString, double> &data)
+{
+    m_processingChartWidget->setData(data);
 }
 
 void MainWindow::setupTimeCorrectedByAlpha()
 {
-    m_page_1->setLayout(new QGridLayout(m_page_1));
+    m_page_1->setLayout(new QGridLayout());
     static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
     m_chartWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
@@ -241,7 +253,7 @@ void MainWindow::setupAmpByGamma(const int gammaNumber)
     for (auto i{0}; i < m_chartWidgetsAmpByGamma.size(); ++i) {
         m_chartWidgetsAmpByGamma.at(i)->deleteLater();
     }
-    m_page_2->setLayout(new QGridLayout(m_page_2));
+    m_page_2->setLayout(new QGridLayout());
     static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
     m_chartWidgetsAmpByGamma.resize(gammaNumber);
@@ -261,6 +273,14 @@ void MainWindow::setupAmpByGamma(const int gammaNumber)
         static_cast<QGridLayout*>(m_page_2->layout())->setRowStretch(i, 1);
         static_cast<QGridLayout*>(m_page_2->layout())->setColumnStretch(i, 1);
     }
+}
+
+void MainWindow::setupProcessing()
+{
+    QGridLayout *gl = new QGridLayout(m_page_3);
+    m_page_3->setLayout(gl);
+    m_processingChartWidget = new ProcessingChartWidget(m_page_3);
+    gl->addWidget(m_processingChartWidget);
 }
 
 
