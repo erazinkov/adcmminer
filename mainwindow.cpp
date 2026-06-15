@@ -95,6 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
     connect(m_controller, &Controller::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
     connect(m_controller, &Controller::handleResultsProcessing, this, &MainWindow::newDataProcessing);
+    connect(m_pushButtonStartStop, &QPushButton::toggled, m_controller, &Controller::operateTimer);
     connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
         m_pushButtonStartStop->setText(checked ? "Stop" : "Start");
     });

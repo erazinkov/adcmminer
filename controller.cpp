@@ -33,7 +33,6 @@ Controller::Controller(const QString &path)
 
     m_fileWatcherThread->start();
     m_processingThread->start();
-    m_timer->start();
 }
 
 Controller::~Controller()
@@ -46,4 +45,16 @@ Controller::~Controller()
 
     m_processingThread->quit();
     m_processingThread->wait();
+}
+
+void Controller::operateTimer(bool isActivated)
+{
+    qDebug() << isActivated;
+    if (m_timer != nullptr) {
+        if (isActivated) {
+            m_timer->start();
+        } else {
+            m_timer->stop();
+        }
+    }
 }

@@ -16,6 +16,9 @@ public:
     Controller(const QString &);
     ~Controller() override;
 
+public slots:
+    void operateTimer(bool isActivated);
+
 signals:
     void handleResultsReadyCheck(const QString &, const QString &, const bool &);
 

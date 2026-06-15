@@ -5,7 +5,6 @@
 #include <QWidget>
 #include <QChart>
 #include <QLabel>
-#include <QAreaSeries>
 #include <QLineSeries>
 #include <QValueAxis>
 
@@ -28,7 +27,6 @@ private:
     QStringList m_sL;
     QList<QLabel *> m_headerLabels;
     QLineSeries *m_lineSeries;
-    QAreaSeries *m_areaSeries;
 
     QValueAxis *m_axisX;
     QValueAxis *m_axisY;
