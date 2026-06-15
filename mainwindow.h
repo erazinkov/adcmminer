@@ -57,13 +57,14 @@ private:
     QWidget *m_page_1;
     QWidget *m_page_2;
 
-//    QHBoxLayout *m_mainLayout;
+    QWidget *m_mainWidget;
+    QGridLayout *m_mainLayout;
 
     QWidget *m_widgetLeft;
     QWidget *m_widgetRight;
 
     QGridLayout *m_gLleft;
-//    QGridLayout *m_gLright;
+    QGridLayout *m_gLright;
     QDialog *m_dialog;
 
 };

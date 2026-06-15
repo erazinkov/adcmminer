@@ -55,7 +55,7 @@ private:
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override {
         if (event->type() == QEvent::HoverEnter) {
-            qDebug() << "Hovered";
+//            qDebug() << "Hovered";
 //            m_shadowEffect->setBlurRadius(25);
             emit hovered(m_chart->title());
 //            setStyleSheet("background-color: #e0e0e0;");

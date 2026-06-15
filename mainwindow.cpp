@@ -23,12 +23,39 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(quitAction, &QAction::triggered, this, &MainWindow::close);
 
-    QSplitter *widget = new QSplitter(this);
 
-//    m_mainLayout = new QHBoxLayout(widget);
+    m_mainWidget = new QWidget(this);
+    m_mainLayout = new QGridLayout(m_mainWidget);
+    setCentralWidget(m_mainWidget);
+
+    QSplitter *splitterWidget = new QSplitter(m_mainWidget);
+    m_mainLayout->addWidget(splitterWidget);
+
+    m_widgetLeft = new QWidget(splitterWidget);
+
+    m_gLleft = new QGridLayout(m_widgetLeft);
+    m_pushButtonStartStop = new QPushButton("Start", m_widgetLeft);
+    m_pushButtonStartStop->setCheckable(true);
+    m_gLleft->addWidget(m_pushButtonStartStop);
+    m_pushButtonReset = new QPushButton("Reset", m_widgetLeft);
+    m_gLleft->addWidget(m_pushButtonReset);
+    m_widgetLeft->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+
+    m_widgetRight = new QWidget(splitterWidget);
+    m_gLright = new QGridLayout(m_widgetRight);
+
+    m_tabWidget = new QTabWidget(m_widgetRight);
+    m_page_1 = new QWidget;
+    m_tabWidget->addTab(m_page_1, "TimeByAlpha");
+    m_page_2 = new QWidget;
+    m_tabWidget->addTab(m_page_2, "AmpByGamma");
+    m_gLright->addWidget(m_tabWidget);
+
+    splitterWidget->addWidget(m_widgetLeft);
+    splitterWidget->addWidget(m_widgetRight);
 
 
-    m_dialog = nullptr;
+//    m_dialog = nullptr;
 
     m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)), this);
     statusBar()->addWidget(m_statusMessageLabel);
@@ -36,20 +63,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_processingController = new ProcessingController();
 
 
-
-
-
-    m_widgetLeft = new QWidget(widget);
-    m_pushButtonStartStop = new QPushButton("Start");
-    m_pushButtonStartStop->setCheckable(true);
-
-    m_pushButtonReset = new QPushButton("Reset");
-    m_widgetRight = new QWidget(widget);
-
-    m_gLleft = new QGridLayout(m_widgetLeft);
-//    m_gLright = new QGridLayout(m_widgetRight);
-
-    m_gLleft->addWidget(m_pushButtonStartStop, 0, 0);
     m_pushButtonStartStop->setStyleSheet(
         "QPushButton {"
         "   color: white;"
@@ -68,17 +81,6 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
     );
 
-    m_gLleft->addWidget(m_pushButtonReset, 1, 0);
-
-    m_tabWidget = new QTabWidget(m_widgetRight);
-    m_page_1 = new QWidget;
-    m_tabWidget->addTab(m_page_1, "TimeByAlpha");
-    m_page_2 = new QWidget;
-    m_tabWidget->addTab(m_page_2, "AmpByGamma");
-    widget->addWidget(m_widgetLeft);
-    widget->addWidget(m_tabWidget);
-
-
     connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &message, const QString &path, const bool &isModified){
         m_statusMessageLabel->setText(message);
         if (isModified && m_pushButtonStartStop->isChecked()) {
@@ -88,16 +90,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_processingController, &ProcessingController::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
     connect(m_processingController, &ProcessingController::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
-    connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){m_pushButtonStartStop->setText(checked ? "Stop" : "Start");});
+    connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
+        qDebug() << checked;
+        m_pushButtonStartStop->setText(checked ? "Stop" : "Start");
+    });
     connect(m_pushButtonReset, &QPushButton::clicked, m_processingController, &ProcessingController::operateR);
-
-
-
 
     setupTimeCorrectedByAlpha();
     setupAmpByGamma();
-
-    setCentralWidget(widget);
 }
 
 MainWindow::~MainWindow()
