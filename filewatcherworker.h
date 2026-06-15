@@ -11,11 +11,11 @@ public:
     explicit FileWatcherWorker(const QString &path, QObject *parent = nullptr);
 
 public slots:
-    void doWorkFC();
-    void doWorkP(const QString &);
+    void doWorkCheck();
+    void doWorkPath(const QString &);
 
 signals:
-    void resultReadyFileCheck(const QString &, const QString &, const bool &);
+    void resultReadyCheck(const QString &, const QString &, const bool &);
 private:
     QString m_path;
     QFileInfo *m_fileInfo;

@@ -7,9 +7,10 @@
 #include "processingcontroller.h"
 #include "constants.h"
 #include "settings.h"
-#include "filewatchercontroller.h"
+//#include "filewatchercontroller.h"
 #include "processingchartwidget.h"
 
+#include "controller.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -52,8 +53,10 @@ private:
 
     QPushButton *m_pushButtonStartStop;
     QPushButton *m_pushButtonReset;
-    ProcessingController *m_processingController;
-    FileWatcherController *m_fileWatcherController;
+//    ProcessingController *m_processingController;
+//    FileWatcherController *m_fileWatcherController;
+
+    Controller *m_controller;
 
     QTabWidget *m_tabWidget;
 

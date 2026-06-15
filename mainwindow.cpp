@@ -64,8 +64,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)), this);
     statusBar()->addWidget(m_statusMessageLabel);
-    m_fileWatcherController = new FileWatcherController(m_path);
-    m_processingController = new ProcessingController();
+//    m_fileWatcherController = new FileWatcherController(m_path);
+//    m_processingController = new ProcessingController();
+
+    m_controller = new Controller(m_path);
 
 
     m_pushButtonStartStop->setStyleSheet(
@@ -86,21 +88,17 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
     );
 
-    connect(m_fileWatcherController, &FileWatcherController::handleResultsReadyFileCheck, [this](const QString &message, const QString &path, const bool &isModified){
+    connect(m_controller, &Controller::handleResultsReadyCheck, [this](const QString &message, const QString &path, const bool &isModified){
         m_statusMessageLabel->setText(message);
-        if (isModified && m_pushButtonStartStop->isChecked()) {
-            m_processingController->operateS(path);
-        }
     });
 
-    connect(m_processingController, &ProcessingController::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
-    connect(m_processingController, &ProcessingController::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
-    connect(m_processingController, &ProcessingController::handleResultsProcessing, this, &MainWindow::newDataProcessing);
+    connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
+    connect(m_controller, &Controller::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
+    connect(m_controller, &Controller::handleResultsProcessing, this, &MainWindow::newDataProcessing);
     connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
-        qDebug() << checked;
         m_pushButtonStartStop->setText(checked ? "Stop" : "Start");
     });
-    connect(m_pushButtonReset, &QPushButton::clicked, m_processingController, &ProcessingController::operateR);
+    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateR);
 
     setupTimeCorrectedByAlpha();
     setupAmpByGamma();
@@ -322,7 +320,7 @@ void MainWindow::openFile() {
         return;
     }
     m_path = fileName;
-    m_fileWatcherController->operateP(m_path);
+    m_controller->operatePath(m_path);
     m_settings->setPath(m_path);
 }
 

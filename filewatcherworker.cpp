@@ -6,7 +6,7 @@ FileWatcherWorker::FileWatcherWorker(const QString &path, QObject *parent)
     m_fileInfo = new QFileInfo(path);
 }
 
-void FileWatcherWorker::doWorkFC()
+void FileWatcherWorker::doWorkCheck()
 {
     QString r;
     bool isModified{false};
@@ -21,10 +21,10 @@ void FileWatcherWorker::doWorkFC()
         r.append(QString("<span style='color: red;'>%1</span> %2").arg(QChar(0x2718)).arg(m_fileInfo->absoluteFilePath()));
     }
     QString p{m_fileInfo->absoluteFilePath()};
-    emit resultReadyFileCheck(r, p, isModified);
+    emit resultReadyCheck(r, p, isModified);
 }
 
-void FileWatcherWorker::doWorkP(const QString &newPath)
+void FileWatcherWorker::doWorkPath(const QString &newPath)
 {
     m_fileInfo->setFile(newPath);
 }

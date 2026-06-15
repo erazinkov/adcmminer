@@ -12,6 +12,7 @@ SOURCES += \
     calibration.cpp \
     channelmap.cpp \
     chartwidget.cpp \
+    controller.cpp \
     datadelegate.cpp \
     decoder.cpp \
     filewatcher.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     channelmap.h \
     chartwidget.h \
     constants.h \
+    controller.h \
     datadelegate.h \
     decoder.h \
     filewatcher.h \

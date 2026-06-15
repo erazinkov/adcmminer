@@ -9,10 +9,10 @@ FileWatcherController::FileWatcherController(const QString &path)
     m_worker = new FileWatcherWorker(path);
     m_worker->moveToThread(m_thread);
 
-    connect(m_timer, &QTimer::timeout, m_worker, &FileWatcherWorker::doWorkFC);
+    connect(m_timer, &QTimer::timeout, m_worker, &FileWatcherWorker::doWorkCheck);
 //    connect(this, &FileWatcherController::operateFC, m_worker, &FileWatcherWorker::doWorkFC);
-    connect(this, &FileWatcherController::operateP, m_worker, &FileWatcherWorker::doWorkP);
-    connect(m_worker, &FileWatcherWorker::resultReadyFileCheck, this, &FileWatcherController::handleResultsReadyFileCheck);
+    connect(this, &FileWatcherController::operateP, m_worker, &FileWatcherWorker::doWorkPath);
+    connect(m_worker, &FileWatcherWorker::resultReadyCheck, this, &FileWatcherController::handleResultsReadyFileCheck);
     connect(m_thread, &QThread::finished, m_worker, &QObject::deleteLater);
 
     m_thread->start();
