@@ -9,6 +9,7 @@
 #include "settings.h"
 //#include "filewatchercontroller.h"
 #include "processingchartwidget.h"
+#include "histchartwidget.h"
 
 #include "controller.h"
 
@@ -75,6 +76,7 @@ private:
     QDialog *m_dialog;
 
     ProcessingChartWidget *m_processingChartWidget;
+    QList<HistChartWidget *> m_histChartWidgetsTimeCorrectedByAlpha;
 
 };
 #endif // MAINWINDOW_H

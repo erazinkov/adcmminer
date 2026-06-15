@@ -113,47 +113,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data)
 {
+
     qDebug() << "newDataTimeCorrectedByAlpha - received";
-    m_dataTimeCorrectedByAlpha.clear();
-    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
-    {
-        m_dataTimeCorrectedByAlpha.insert(i.key(), i.value());
+//    m_dataTimeCorrectedByAlpha.clear();
+    auto j{0};
+    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i) {
+        if (j < m_histChartWidgetsTimeCorrectedByAlpha.size()) {
+            m_histChartWidgetsTimeCorrectedByAlpha.at(j)->setData(i.key(), i.value());
+        }
+        j++;
     }
-    m_seriesTimeCorrectesByAlpha.clear();
-    auto dataColor{QColorConstants::Blue};
-    for (auto i = m_dataTimeCorrectedByAlpha.cbegin(), end = m_dataTimeCorrectedByAlpha.cend(); i != end; ++i)
-    {
-        QLineSeries *series = new QLineSeries();
-        series->append(i.value());
-        series->setName(i.key());
-        QAreaSeries *areaSeries = new QAreaSeries(series);
-        QPen pen;
-        pen.setWidth(1);
-        pen.setColor(dataColor);
-        areaSeries->setPen(pen);
-        areaSeries->setColor(dataColor);
-        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-        dataGradient.setColorAt(0.0, dataColor);
-        dataGradient.setColorAt(1.0, dataColor.lighter());
-        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-        areaSeries->setOpacity(0.75);
-        areaSeries->setBrush(dataGradient);
-        areaSeries->setColor(dataColor);
-        areaSeries->setName(i.key());
-        m_seriesTimeCorrectesByAlpha.append(areaSeries);
-    }
-
-    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_chartWidgetsTimeCorrectedByAlpha.size()); ++i)
-    {
-        m_chartWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
-        m_chartWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
-    }
-
-//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
-//    {
-//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-//        m_mainWidgetList.at(i)->process({m_series.at(i)});
-//    }
 }
 
 void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
@@ -197,18 +166,9 @@ void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, co
 
     for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
     {
-//        m_chartWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
-//        m_chartWidgetsAmpByGamma.at(i)->setTitle("");
-
         m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
         m_chartWidgetsAmpByGamma.at(i)->setHeader(t.at(i));
     }
-
-//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
-//    {
-//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-//        m_mainWidgetList.at(i)->process({m_series.at(i)});
-    //    }
 }
 
 void MainWindow::newDataProcessing(const QMap<QString, double> &data)
@@ -221,17 +181,17 @@ void MainWindow::setupTimeCorrectedByAlpha()
     m_page_1->setLayout(new QGridLayout());
     static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
-    m_chartWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
+    m_histChartWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
     auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_ALPHA_NUMBER)))};
     auto index{0};
     for (auto ir{0}; ir < cd; ++ir)
     {
         for (auto ic{0}; ic < cd; ++ic)
         {
-            if (index < m_chartWidgetsTimeCorrectedByAlpha.size())
+            if (index < m_histChartWidgetsTimeCorrectedByAlpha.size())
             {
-                m_chartWidgetsTimeCorrectedByAlpha[index] = new ChartWidget;
-                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_chartWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
+                m_histChartWidgetsTimeCorrectedByAlpha[index] = new HistChartWidget(-100.0, 100.0);
+                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_histChartWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
                 index++;
             }
         }
@@ -324,4 +284,41 @@ void MainWindow::openFile() {
     m_settings->setPath(m_path);
 }
 
+//void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data)
+//{
+//    qDebug() << "newDataTimeCorrectedByAlpha - received";
+//    m_dataTimeCorrectedByAlpha.clear();
+//    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
+//    {
+//        m_dataTimeCorrectedByAlpha.insert(i.key(), i.value());
+//    }
+//    m_seriesTimeCorrectesByAlpha.clear();
+//    auto dataColor{QColorConstants::Blue};
+//    for (auto i = m_dataTimeCorrectedByAlpha.cbegin(), end = m_dataTimeCorrectedByAlpha.cend(); i != end; ++i)
+//    {
+//        QLineSeries *series = new QLineSeries();
+//        series->append(i.value());
+//        series->setName(i.key());
+//        QAreaSeries *areaSeries = new QAreaSeries(series);
+//        QPen pen;
+//        pen.setWidth(1);
+//        pen.setColor(dataColor);
+//        areaSeries->setPen(pen);
+//        areaSeries->setColor(dataColor);
+//        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
+//        dataGradient.setColorAt(0.0, dataColor);
+//        dataGradient.setColorAt(1.0, dataColor.lighter());
+//        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+//        areaSeries->setOpacity(0.75);
+//        areaSeries->setBrush(dataGradient);
+//        areaSeries->setColor(dataColor);
+//        areaSeries->setName(i.key());
+//        m_seriesTimeCorrectesByAlpha.append(areaSeries);
+//    }
 
+//    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_chartWidgetsTimeCorrectedByAlpha.size()); ++i)
+//    {
+//        m_chartWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
+//        m_chartWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
+//    }
+//}

@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QAreaSeries>
 #include <QLineSeries>
+#include <QValueAxis>
 
 #include "chartview.h"
 
@@ -19,7 +20,7 @@ public:
 
 public slots:
     void setHeader(const QStringList &newData);
-    void setData(const QString &title, QList<QPointF> &points);
+    void setData(const QString &title, const QList<QPointF> &points);
 private:
     QChart *m_chart;
     ChartView *m_chartView;
@@ -28,6 +29,9 @@ private:
     QList<QLabel *> m_headerLabels;
     QLineSeries *m_lineSeries;
     QAreaSeries *m_areaSeries;
+
+    QValueAxis *m_axisX;
+    QValueAxis *m_axisY;
 };
 
 #endif // HISTCHARTWIDGET_H

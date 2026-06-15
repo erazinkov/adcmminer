@@ -25,27 +25,35 @@ HistChartWidget::HistChartWidget(const double xMin, const double xMax, QWidget *
     m_chartView->setRenderHint(QPainter::Antialiasing);
 
     m_lineSeries = new QLineSeries();
-    m_areaSeries = new QAreaSeries(m_lineSeries);
-    auto color{QColorConstants::Green};
-    QPen pen;
-    pen.setWidth(1);
-    pen.setColor(QColorConstants::Green);
-    m_areaSeries->setPen(pen);
-    m_areaSeries->setColor(color);
-    QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-    dataGradient.setColorAt(0.0, color);
-    dataGradient.setColorAt(1.0, color.lighter());
-    dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-    m_areaSeries->setOpacity(0.75);
-    m_areaSeries->setBrush(dataGradient);
-    m_areaSeries->setColor(color);
+//    m_areaSeries = new QAreaSeries(m_lineSeries);
+    m_chart->addSeries(m_lineSeries);
+//    auto color{QColorConstants::Green};
+//    QPen pen;
+//    pen.setWidth(1);
+//    pen.setColor(color);
+//    m_areaSeries->setPen(pen);
+//    m_areaSeries->setColor(color);
+//    QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
+//    dataGradient.setColorAt(0.0, color);
+//    dataGradient.setColorAt(1.0, color.lighter());
+//    dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+//    m_areaSeries->setOpacity(0.75);
+//    m_areaSeries->setBrush(dataGradient);
+//    m_areaSeries->setColor(color);
 
-    QValueAxis *axisX = new QValueAxis();
-    axisX->setRange(xMin, xMax);
-    axisX->setTickCount(10);
+    m_axisX = new QValueAxis();
+    m_axisX->setRange(xMin, xMax);
+    m_axisX->setTickCount(5);
+    m_axisY = new QValueAxis();
+    m_axisY->setRange(0, 1.0);
+    m_axisY->setTickCount(5);
 
-    m_chart->addAxis(axisX, Qt::AlignBottom);
-    m_areaSeries->attachAxis(axisX);
+    m_chart->addAxis(m_axisX, Qt::AlignBottom);
+    m_chart->addAxis(m_axisY, Qt::AlignLeft);
+
+    m_lineSeries->attachAxis(m_axisX);
+    m_lineSeries->attachAxis(m_axisY);
+
 }
 
 void HistChartWidget::setHeader(const QStringList &newData)
@@ -55,8 +63,18 @@ void HistChartWidget::setHeader(const QStringList &newData)
     }
 }
 
-void HistChartWidget::setData(const QString &title, QList<QPointF> &points)
+void HistChartWidget::setData(const QString &, const QList<QPointF> &points)
 {
-    m_chart->setTitle(title);
+    if (points.isEmpty()) {
+        return;
+    }
+    m_chart->setTitle("");
+    auto pointsMaxY = std::max_element(points.constBegin(), points.constEnd(),
+            [](const QPointF &a, const QPointF &b) {
+                return a.y() < b.y();
+            })->y();
     m_lineSeries->replace(points);
+    if (m_axisY->max() < pointsMaxY) {
+        m_axisY->setRange(m_axisY->min(), pointsMaxY);
+    }
 }
