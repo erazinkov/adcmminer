@@ -88,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
     );
 
-    connect(m_controller, &Controller::handleResultsReadyCheck, [this](const QString &message, const QString &path, const bool &isModified){
+    connect(m_controller, &Controller::handleResultsReadyCheck, [this](const QString &message){
         m_statusMessageLabel->setText(message);
     });
 
@@ -144,44 +144,6 @@ void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, co
         }
         j++;
     }
-//    m_dataAmpByGamma.clear();
-//    QList<QStringList> t;
-//    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
-//    {
-//        m_dataAmpByGamma.insert(i.key(), i.value());
-//        t.append(text[i.key()]);
-//    }
-//    m_seriesAmpByGamma.clear();
-
-//    auto dataColor{QColorConstants::Green};
-//    for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
-//    {
-//        QLineSeries *series = new QLineSeries();
-//        series->append(i.value());
-//        series->setName(i.key());
-//        QAreaSeries *areaSeries = new QAreaSeries(series);
-//        QPen pen;
-//        pen.setWidth(1);
-//        pen.setColor(dataColor);
-//        areaSeries->setPen(pen);
-//        areaSeries->setColor(dataColor);
-//        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-//        dataGradient.setColorAt(0.0, dataColor);
-//        dataGradient.setColorAt(1.0, dataColor.lighter());
-//        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-//        areaSeries->setOpacity(0.75);
-//        areaSeries->setBrush(dataGradient);
-//        areaSeries->setColor(dataColor);
-//        areaSeries->setName(i.key());
-//        m_seriesAmpByGamma.append(areaSeries);
-
-//    }
-
-//    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
-//    {
-//        m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
-//        m_chartWidgetsAmpByGamma.at(i)->setHeader(t.at(i));
-//    }
 }
 
 void MainWindow::newDataProcessing(const QMap<QString, double> &data)
@@ -296,42 +258,3 @@ void MainWindow::openFile() {
     m_controller->operatePath(m_path);
     m_settings->setPath(m_path);
 }
-
-//void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data)
-//{
-//    qDebug() << "newDataTimeCorrectedByAlpha - received";
-//    m_dataTimeCorrectedByAlpha.clear();
-//    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
-//    {
-//        m_dataTimeCorrectedByAlpha.insert(i.key(), i.value());
-//    }
-//    m_seriesTimeCorrectesByAlpha.clear();
-//    auto dataColor{QColorConstants::Blue};
-//    for (auto i = m_dataTimeCorrectedByAlpha.cbegin(), end = m_dataTimeCorrectedByAlpha.cend(); i != end; ++i)
-//    {
-//        QLineSeries *series = new QLineSeries();
-//        series->append(i.value());
-//        series->setName(i.key());
-//        QAreaSeries *areaSeries = new QAreaSeries(series);
-//        QPen pen;
-//        pen.setWidth(1);
-//        pen.setColor(dataColor);
-//        areaSeries->setPen(pen);
-//        areaSeries->setColor(dataColor);
-//        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-//        dataGradient.setColorAt(0.0, dataColor);
-//        dataGradient.setColorAt(1.0, dataColor.lighter());
-//        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-//        areaSeries->setOpacity(0.75);
-//        areaSeries->setBrush(dataGradient);
-//        areaSeries->setColor(dataColor);
-//        areaSeries->setName(i.key());
-//        m_seriesTimeCorrectesByAlpha.append(areaSeries);
-//    }
-
-//    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_chartWidgetsTimeCorrectedByAlpha.size()); ++i)
-//    {
-//        m_chartWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
-//        m_chartWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
-//    }
-//}

@@ -25,7 +25,7 @@ Controller::Controller(const QString &path)
     connect(m_processingThread, &QThread::finished, m_processingWorker, &QObject::deleteLater);
 
     connect(m_fileWatcherWorker, &FileWatcherWorker::resultReadyCheck, [this](const QString &message, const QString &path, const bool &isModified){
-        emit handleResultsReadyCheck(message, path, isModified);
+        emit handleResultsReadyCheck(message);
         if (isModified) {
             m_processingWorker->doWorkS(path);
         }
@@ -47,11 +47,10 @@ Controller::~Controller()
     m_processingThread->wait();
 }
 
-void Controller::operateTimer(bool isActivated)
+void Controller::operateTimer(bool checked)
 {
-    qDebug() << isActivated;
     if (m_timer != nullptr) {
-        if (isActivated) {
+        if (checked) {
             m_timer->start();
         } else {
             m_timer->stop();

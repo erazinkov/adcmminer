@@ -4,10 +4,8 @@
 #include <QMainWindow>
 
 #include "chartwidget.h"
-#include "processingcontroller.h"
 #include "constants.h"
 #include "settings.h"
-//#include "filewatchercontroller.h"
 #include "processingchartwidget.h"
 #include "histchartwidget.h"
 

@@ -16,7 +16,6 @@ SOURCES += \
     datadelegate.cpp \
     decoder.cpp \
     filewatcher.cpp \
-    filewatchercontroller.cpp \
     filewatcherworker.cpp \
     flowlayout.cpp \
     histchartwidget.cpp \
@@ -24,7 +23,6 @@ SOURCES += \
     mainwindow.cpp \
     mousepresseater.cpp \
     processingchartwidget.cpp \
-    processingcontroller.cpp \
     histogrammanager.cpp \
     peakfinder.cpp \
     energypeak.cpp \
@@ -47,14 +45,12 @@ HEADERS += \
     datadelegate.h \
     decoder.h \
     filewatcher.h \
-    filewatchercontroller.h \
     filewatcherworker.h \
     flowlayout.h \
     histchartwidget.h \
     mainwindow.h \
     mousepresseater.h \
     processingchartwidget.h \
-    processingcontroller.h \
     processingworker.h \
     utils.h \
     histogrammanager.h \

@@ -17,10 +17,10 @@ public:
     ~Controller() override;
 
 public slots:
-    void operateTimer(bool isActivated);
+    void operateTimer(bool checked);
 
 signals:
-    void handleResultsReadyCheck(const QString &, const QString &, const bool &);
+    void handleResultsReadyCheck(const QString &);
 
     void operateCheck();
     void operatePath(const QString &);

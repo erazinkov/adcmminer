@@ -30,7 +30,7 @@ void ProcessingChartWidget::setData(const QMap<QString, double> &data)
     m_series->setLabelsVisible(true);
     for (QPieSlice *slice : m_series->slices()) {
         slice->setLabelVisible(true);
-        double percentage = (slice->value() / m_series->sum()) * 100;
+        double percentage = (slice->value() / m_series->sum()) * 100.0;
         slice->setLabel(QString("%1 - %2ms %3%").arg(slice->label()).arg(qRound(slice->value() * s / 100.0)).arg(percentage, 0, 'f', 1));
     }
 }
