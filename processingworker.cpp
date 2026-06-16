@@ -36,9 +36,7 @@ void ProcessingWorker::doWorkS(const QString &path)
     auto stop = std::chrono::steady_clock::now();
     std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     m.insert("Decode", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
-//    m_data.clear();
-//    m_data.insert(m_data.cend(), m_decoder->events().cbegin(), m_decoder->events().cend());
-//    m_calibration->setNewEvents(m_data, m_decoder->channels());
+
     start = std::chrono::steady_clock::now();
     m_calibration->setNewEvents(m_decoder->events_m(), m_decoder->channels());
     stop = std::chrono::steady_clock::now();
@@ -57,9 +55,10 @@ void ProcessingWorker::doWorkS(const QString &path)
     emit resultReadyProcessing(m);
 }
 
-void ProcessingWorker::doWorkR()
+void ProcessingWorker::doWorkReset()
 {
     m_calibration->resetEvents();
+    m_histogramManager->resetAll();
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
 }
@@ -79,6 +78,7 @@ void ProcessingWorker::histToPointsTimeCorrectedByAlpha()
 {
 
     QMap<QString, QList<QPointF>> data;
+    QMap<QString, QStringList> text;
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
         h = m_histogramManager->histsTimeCorrectedByAlpha()[i];
@@ -86,10 +86,13 @@ void ProcessingWorker::histToPointsTimeCorrectedByAlpha()
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
         {
             data.insert(j.key(), j.value());
+            text.insert(j.key(), {
+                            QString("<span><font color='red'>%1</font></span>").arg(i)
+                        });
         }
         h = nullptr;
     }
-    emit resultReadyTimeCorrectedByAlpha(data);
+    emit resultReadyTimeCorrectedByAlpha(data, text);
 }
 
 void ProcessingWorker::histToPointsAmpByGamma()
@@ -127,13 +130,13 @@ void ProcessingWorker::histToPointsAmpByGamma()
         for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j) {
             data.insert(j.key(), j.value());
             text.insert(j.key(), {
-                            QString("<h2><font color='red'>%1</font></h2>").arg(i),
-                            QString("<h3>%1</h3>").arg(qRound(h->Integral())),
-                            QString("<h3>%1</h3>").arg(qRound(100.0 * h->Integral() / (s < 1.0 ? 1.0 : s )))
+                            QString("<span><font color='red'>%1</font></span>").arg(i),
+                            QString("<span>%1</span>").arg(qRound(h->Integral())),
+                            QString("<span>%1%</span>").arg(qRound(100.0 * h->Integral() / (s < 1.0 ? 1.0 : s )))
                         });
             h = nullptr;
         }
     }
 
-    emit resultReadyAmpByGamma(data, text);
+    emit resultReadyEnergyByAlpha(data, text);
 }

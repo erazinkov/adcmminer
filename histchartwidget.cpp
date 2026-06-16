@@ -6,7 +6,7 @@
 HistChartWidget::HistChartWidget(const double xMin, const double xMax, QWidget *parent) : QWidget{parent}
 {
     m_sL = {
-        "<h2><font color='red'>?</font></h2>", "<h3>?</h3>", "<h3>?</h3>"
+        "<span><font color='red'>?</font></span>", "<span>?</span>", "<span>?</span>"
     };
     m_chart = new QChart;
     m_chartView = new ChartView(m_chart, this);
@@ -61,5 +61,8 @@ void HistChartWidget::setData(const QString &title, const QList<QPointF> &points
     m_lineSeries->replace(points);
     if (m_axisY->max() < pointsMaxY) {
         m_axisY->setRange(m_axisY->min(), pointsMaxY);
+    }
+    if (qFuzzyCompare(0.0, pointsMaxY)) {
+        m_axisY->setRange(0, 1.0);
     }
 }

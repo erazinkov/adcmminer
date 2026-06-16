@@ -18,9 +18,9 @@ Controller::Controller(const QString &path)
     connect(m_fileWatcherThread, &QThread::finished, m_fileWatcherWorker, &QObject::deleteLater);
 
 //    connect(this, &Controller::operateS, m_processingWorker, &ProcessingWorker::doWorkS);
-    connect(this, &Controller::operateR, m_processingWorker, &ProcessingWorker::doWorkR);
+    connect(this, &Controller::operateReset, m_processingWorker, &ProcessingWorker::doWorkReset);
     connect(m_processingWorker, &ProcessingWorker::resultReadyTimeCorrectedByAlpha, this, &Controller::handleResultsTimeCorrectedByAlpha);
-    connect(m_processingWorker, &ProcessingWorker::resultReadyAmpByGamma, this, &Controller::handleResultsAmpByGamma);
+    connect(m_processingWorker, &ProcessingWorker::resultReadyEnergyByAlpha, this, &Controller::handleResultsEnergyByAlpha);
     connect(m_processingWorker, &ProcessingWorker::resultReadyProcessing, this, &Controller::handleResultsProcessing);
     connect(m_processingThread, &QThread::finished, m_processingWorker, &QObject::deleteLater);
 

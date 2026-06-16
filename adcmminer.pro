@@ -11,7 +11,6 @@ CONFIG += c++17
 SOURCES += \
     calibration.cpp \
     channelmap.cpp \
-    chartwidget.cpp \
     controller.cpp \
     datadelegate.cpp \
     decoder.cpp \
@@ -39,7 +38,6 @@ HEADERS += \
     adcm_df.h \
     calibration.h \
     channelmap.h \
-    chartwidget.h \
     constants.h \
     controller.h \
     datadelegate.h \

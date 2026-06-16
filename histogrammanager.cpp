@@ -272,6 +272,30 @@ void HistogramManager::saveToRootFile(const std::string &fileName, std::shared_p
     }
 }
 
+void HistogramManager::resetAll()
+{
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+        for (auto ia{0}; ia < alphaNumber_; ia++) {
+            histsTimeByGammaAlpha_[ig][ia]->Reset();
+            histsAmpByGammaAlphaSg_[ig][ia]->Reset();
+            histsAmpByGammaAlphaBg_[ig][ia]->Reset();
+            histsAmpByGammaAlphaRc_[ig][ia]->Reset();
+            histsEnergyByGammaAlphaSg_[ig][ia]->Reset();
+            histsEnergyByGammaAlphaBg_[ig][ia]->Reset();
+        }
+    }
+    for (auto ia{0}; ia < alphaNumber_; ia++) {
+            histsAmpByAlpha_[ia]->Reset();
+            histsTimeCorrectedByAlpha_[ia]->Reset();
+            histsEnergyByAlpha_[ia]->Reset();
+    }
+    for (auto ig{0}; ig < gammaNumber_; ig++) {
+            histsAmpByGamma_[ig]->Reset();
+            histsAmpByGammaRc_[ig]->Reset();
+            histsEnergyByGamma_[ig]->Reset();
+    }
+}
+
 const std::vector<std::vector<TH1D *> > &HistogramManager::histsAmpByGammaAlpha() const
 {
     return histsAmpByGammaAlphaSg_;

@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 
-#include "chartwidget.h"
 #include "constants.h"
 #include "settings.h"
 #include "processingchartwidget.h"
@@ -24,12 +23,12 @@ public:
 
 
 private slots:
-    void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
-    void newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+    void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
+    void newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
     void newDataProcessing(const QMap<QString, double> &data);
 
     void setupTimeCorrectedByAlpha();
-    void setupAmpByGamma(const int gammaNumber = AppConstants::MAX_GAMMA_NUMBER);
+    void setupEnergyByAlpha();
     void setupProcessing();
 
     void showDialog(QString);
@@ -41,14 +40,6 @@ private:
     Settings *m_settings;
     QString m_path;
     QLabel *m_statusMessageLabel;
-
-    QList<ChartWidget *> m_chartWidgetsTimeCorrectedByAlpha;
-    QList<QAbstractSeries *> m_seriesTimeCorrectesByAlpha;
-    QMap<QString, QList<QPointF>> m_dataTimeCorrectedByAlpha;
-
-//    QList<ChartWidget *> m_chartWidgetsAmpByGamma;
-    QList<QAbstractSeries *> m_seriesAmpByGamma;
-    QMap<QString, QList<QPointF>> m_dataAmpByGamma;
 
     QPushButton *m_pushButtonStartStop;
     QPushButton *m_pushButtonReset;
@@ -73,7 +64,7 @@ private:
 
     ProcessingChartWidget *m_processingChartWidget;
     QList<HistChartWidget *> m_histChartWidgetsTimeCorrectedByAlpha;
-    QList<HistChartWidget *> m_histChartWidgetsEnergyByGamma;
+    QList<HistChartWidget *> m_histChartWidgetsEnergyByAlpha;
 
 };
 #endif // MAINWINDOW_H

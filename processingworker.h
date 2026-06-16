@@ -27,10 +27,10 @@ public:
     explicit ProcessingWorker(QObject *parent = nullptr);
 public slots:
     void doWorkS(const QString &);
-    void doWorkR();
+    void doWorkReset();
 signals:
-    void resultReadyTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
-    void resultReadyAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+    void resultReadyTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
+    void resultReadyEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
     void resultReadyProcessing(const QMap<QString, double> &data);
 private:
     Decoder *m_decoder;

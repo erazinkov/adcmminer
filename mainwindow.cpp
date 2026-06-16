@@ -49,9 +49,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_tabWidget = new QTabWidget(m_widgetRight);
 
     m_page_1 = new QWidget;
-    m_tabWidget->addTab(m_page_1, "TimeByAlpha");
+    m_tabWidget->addTab(m_page_1, "TimeCorrectedByAlpha");
     m_page_2 = new QWidget;
-    m_tabWidget->addTab(m_page_2, "AmpByGamma");
+    m_tabWidget->addTab(m_page_2, "EnergyByAlpha");
     m_page_3 = new QWidget;
     m_tabWidget->addTab(m_page_3, "Processing");
     m_gLright->addWidget(m_tabWidget);
@@ -64,8 +64,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)), this);
     statusBar()->addWidget(m_statusMessageLabel);
-//    m_fileWatcherController = new FileWatcherController(m_path);
-//    m_processingController = new ProcessingController();
+
 
     m_controller = new Controller(m_path);
 
@@ -93,16 +92,16 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
-    connect(m_controller, &Controller::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
+    connect(m_controller, &Controller::handleResultsEnergyByAlpha, this, &MainWindow::newDataEnergyByAlpha);
     connect(m_controller, &Controller::handleResultsProcessing, this, &MainWindow::newDataProcessing);
     connect(m_pushButtonStartStop, &QPushButton::toggled, m_controller, &Controller::operateTimer);
     connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
         m_pushButtonStartStop->setText(checked ? "Stop" : "Start");
     });
-    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateR);
+    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateReset);
 
     setupTimeCorrectedByAlpha();
-    setupAmpByGamma();
+    setupEnergyByAlpha();
     setupProcessing();
 }
 
@@ -112,35 +111,31 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data)
+void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
 {
-
-    qDebug() << "newDataTimeCorrectedByAlpha - received";
-//    m_dataTimeCorrectedByAlpha.clear();
+    if (data.size() != m_histChartWidgetsTimeCorrectedByAlpha.size()) {
+        // TODO ?
+    }
     auto j{0};
     for (auto i = data.cbegin(), end = data.cend(); i != end; ++i) {
         if (j < m_histChartWidgetsTimeCorrectedByAlpha.size()) {
+            m_histChartWidgetsTimeCorrectedByAlpha.at(j)->setHeader(text[i.key()]);
             m_histChartWidgetsTimeCorrectedByAlpha.at(j)->setData(i.key(), i.value());
         }
         j++;
     }
 }
 
-void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
+void MainWindow::newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
 {
-    qDebug() << "newDataAmpByGamma - received";
-    if (data.size() != m_histChartWidgetsEnergyByGamma.size()) {
-        setupAmpByGamma(data.size());
-    }
-    QList<QStringList> t;
-    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i){
-        t.append(text[i.key()]);
+    if (data.size() != m_histChartWidgetsEnergyByAlpha.size()) {
+        // TODO ?
     }
     auto j{0};
     for (auto i = data.cbegin(), end = data.cend(); i != end; ++i) {
-        if (j < m_histChartWidgetsEnergyByGamma.size()) {
-            m_histChartWidgetsEnergyByGamma.at(j)->setHeader(text[i.key()]);
-            m_histChartWidgetsEnergyByGamma.at(j)->setData(i.key(), i.value());
+        if (j < m_histChartWidgetsEnergyByAlpha.size()) {
+            m_histChartWidgetsEnergyByAlpha.at(j)->setHeader(text[i.key()]);
+            m_histChartWidgetsEnergyByAlpha.at(j)->setData(i.key(), i.value());
         }
         j++;
     }
@@ -178,26 +173,26 @@ void MainWindow::setupTimeCorrectedByAlpha()
     }
 }
 
-void MainWindow::setupAmpByGamma(const int gammaNumber)
+void MainWindow::setupEnergyByAlpha()
 {
     if (m_page_2->layout()) {
         delete m_page_2->layout();
     }
-    for (auto i{0}; i < m_histChartWidgetsEnergyByGamma.size(); ++i) {
-        m_histChartWidgetsEnergyByGamma.at(i)->deleteLater();
+    for (auto i{0}; i < m_histChartWidgetsEnergyByAlpha.size(); ++i) {
+        m_histChartWidgetsEnergyByAlpha.at(i)->deleteLater();
     }
     m_page_2->setLayout(new QGridLayout());
     static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
-    m_histChartWidgetsEnergyByGamma.resize(gammaNumber);
-    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(gammaNumber)))};
+    m_histChartWidgetsEnergyByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_ALPHA_NUMBER)))};
     auto index{0};
     for (auto ir{0}; ir < cd; ++ir) {
         for (auto ic{0}; ic < cd; ++ic) {
-            if (index < m_histChartWidgetsEnergyByGamma.size()) {
-                m_histChartWidgetsEnergyByGamma[index] = new HistChartWidget(0.0, 8'000.0);
+            if (index < m_histChartWidgetsEnergyByAlpha.size()) {
+                m_histChartWidgetsEnergyByAlpha[index] = new HistChartWidget(0.0, 8'000.0);
 //                connect(m_chartWidgetsAmpByGamma[index], &ChartWidget::hovered, this, &MainWindow::showDialog);
-                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_histChartWidgetsEnergyByGamma.at(index), ir, ic);
+                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_histChartWidgetsEnergyByAlpha.at(index), ir, ic);
                 index++;
             }
         }

@@ -25,12 +25,12 @@ signals:
     void operateCheck();
     void operatePath(const QString &);
 
-    void handleResultsTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
-    void handleResultsAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+    void handleResultsTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
+    void handleResultsEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
     void handleResultsProcessing(const QMap<QString, double> &data);
 
     void operateS(const QString &);
-    void operateR();
+    void operateReset();
 
 private:
     QTimer *m_timer;
