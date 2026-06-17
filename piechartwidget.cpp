@@ -1,7 +1,7 @@
-#include "processingchartwidget.h"
+#include "piechartwidget.h"
 #include <algorithm>
 
-ProcessingChartWidget::ProcessingChartWidget(QWidget *parent)
+PieChartWidget::PieChartWidget(QWidget *parent)
     : QWidget{parent}
 {
     m_chart = new QChart();
@@ -15,7 +15,7 @@ ProcessingChartWidget::ProcessingChartWidget(QWidget *parent)
 
 }
 
-void ProcessingChartWidget::setData(const QMap<QString, double> &data)
+void PieChartWidget::setData(const QMap<QString, double> &data)
 {
     m_series->clear();
     double s{0.0};

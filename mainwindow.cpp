@@ -6,7 +6,7 @@
 #include "calibration.h"
 #include "datadelegate.h"
 
-#include "processingchartwidget.h"
+#include "piechartwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -157,7 +157,7 @@ void MainWindow::newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data,
 void MainWindow::newDataProcessing(const QMap<QString, double> &data, double s)
 {
     m_timeLineEdit->setText(QString::number(s, 'f', 2));
-    m_processingChartWidget->setData(data);
+    m_pieChartWidget->setData(data);
 }
 
 void MainWindow::setupTimeCorrectedByAlpha()
@@ -221,8 +221,10 @@ void MainWindow::setupProcessing()
 {
     QGridLayout *gl = new QGridLayout(m_page_3);
     m_page_3->setLayout(gl);
-    m_processingChartWidget = new ProcessingChartWidget(m_page_3);
-    gl->addWidget(m_processingChartWidget);
+    m_pieChartWidget = new PieChartWidget(m_page_3);
+    gl->addWidget(m_pieChartWidget, 0, 0);
+    m_barChartWidget = new BarChartWidget(tr("Counters"), m_page_3);
+    gl->addWidget(m_barChartWidget, 0, 1);
 }
 
 

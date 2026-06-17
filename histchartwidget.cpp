@@ -12,6 +12,7 @@ HistChartWidget::HistChartWidget(const double xMin, const double xMax, QWidget *
     m_chartView = new ChartView(m_chart, this);
     QWidget *header = new QWidget(this);
     QHBoxLayout *headerLayout = new QHBoxLayout(header);
+    headerLayout->setContentsMargins(0, 0, 0, 0);
     header->setLayout(headerLayout);
     for (auto &s : m_sL) {
         m_headerLabels.push_back(new QLabel(s));

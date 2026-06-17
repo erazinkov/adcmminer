@@ -22,9 +22,7 @@ void ProcessingWorker::doWorkS(const QString &path)
     auto stop = std::chrono::steady_clock::now();
     m.insert(tr("Decoding"), std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
     start = std::chrono::steady_clock::now();
-    m_calibration->setNewData(m_decoder->events(), m_decoder->channels(), m_decoder->time());
-    stop = std::chrono::steady_clock::now();
-    start = std::chrono::steady_clock::now();
+    m_calibration->setNewData(m_decoder->events(), m_decoder->channels(), m_decoder->time(), m_decoder->counters());
     m_calibration->process();
     stop = std::chrono::steady_clock::now();
     m.insert(tr("Calibration"), std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
@@ -32,6 +30,9 @@ void ProcessingWorker::doWorkS(const QString &path)
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
     stop = std::chrono::steady_clock::now();
+    for (const auto& [key, value] : m_calibration->countersG()) {
+        std::cout << key << " " << value << std::endl;
+    }
     emit resultReadyProcessing(m, m_calibration->time());
 }
 
@@ -63,15 +64,18 @@ void ProcessingWorker::histToPointsTimeCorrectedByAlpha()
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
         h = m_histogramManager->histsTimeCorrectedByAlpha()[i];
-        m_dataDelegate->histToData(h);
-        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
-        {
-            data.insert(j.key(), j.value());
-            text.insert(j.key(), {
-                            QString("<span><font color='red'>%1</font></span>").arg(i)
-                        });
+        if (h) {
+            m_dataDelegate->histToData(h);
+            for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j)
+            {
+                data.insert(j.key(), j.value());
+                text.insert(j.key(), {
+                                QString("<span><font color='red'>%1</font></span>").arg(i)
+                            });
+            }
+            h = nullptr;
         }
-        h = nullptr;
+
     }
     emit resultReadyTimeCorrectedByAlpha(data, text);
 }
@@ -107,16 +111,19 @@ void ProcessingWorker::histToPointsAmpByGamma()
     for (ulong i{0}; i < m_decoder->channels().a.size(); ++i) {
         TH1 *h;
         h = m_histogramManager->histsEnergyByAlpha()[i];
-        m_dataDelegate->histToData(h);
-        for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j) {
-            data.insert(j.key(), j.value());
-            text.insert(j.key(), {
-                            QString("<span><font color='red'>%1</font></span>").arg(i),
-                            QString("<span>%1</span>").arg(qRound(h->Integral())),
-                            QString("<span>%1%</span>").arg(qRound(100.0 * h->Integral() / (s < 1.0 ? 1.0 : s )))
-                        });
-            h = nullptr;
+        if (h) {
+            m_dataDelegate->histToData(h);
+            for (auto j = m_dataDelegate->data().cbegin(), end = m_dataDelegate->data().cend(); j != end; ++j) {
+                data.insert(j.key(), j.value());
+                text.insert(j.key(), {
+                                QString("<span><font color='red'>%1</font></span>").arg(i),
+                                QString("<span>%1</span>").arg(qRound(h->Integral())),
+                                QString("<span>%1%</span>").arg(qRound(100.0 * h->Integral() / (s < 1.0 ? 1.0 : s )))
+                            });
+                h = nullptr;
+            }
         }
+
     }
 
     emit resultReadyEnergyByAlpha(data, text);

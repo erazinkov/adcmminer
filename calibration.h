@@ -17,15 +17,22 @@ public:
     void process();
     void setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> &events,
                     const dec_ch_t &channels,
-                    double time);
+                    double time,
+                    const std::map<uint8_t, uint32_t> &counters);
     void resetData();
     //    HistogramManager *histogramManager;
     double time() const;
+
+    const std::map<uint8_t, double> &counters() const;
+
+    const std::map<uint8_t, double> &countersG() const;
 
 private:
     const HistogramManager *histogramManager_;
     std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> events_m_;
     double time_;
+    std::map<uint8_t, double> counters_;
+    std::map<uint8_t, double> countersG_;
     std::map<std::pair<uint8_t, uint8_t>, double> timeCorrections_;
     dec_ch_t channels_;
     std::unique_ptr<TimePeaksFinder> timePeaksFinder_; // TODO

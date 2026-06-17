@@ -5,8 +5,9 @@
 
 #include "constants.h"
 #include "settings.h"
-#include "processingchartwidget.h"
+#include "piechartwidget.h"
 #include "histchartwidget.h"
+#include "barchartwidget.h"
 
 #include "controller.h"
 
@@ -62,12 +63,14 @@ private:
     QGridLayout *m_gLright;
     QDialog *m_dialog;
 
-    ProcessingChartWidget *m_processingChartWidget;
+    PieChartWidget *m_pieChartWidget;
     QList<HistChartWidget *> m_histChartWidgetsTimeCorrectedByAlpha;
     QList<HistChartWidget *> m_histChartWidgetsEnergyByAlpha;
 
     QLabel *m_timeLabel;
     QLineEdit *m_timeLineEdit;
+
+    BarChartWidget *m_barChartWidget;
 
 };
 #endif // MAINWINDOW_H

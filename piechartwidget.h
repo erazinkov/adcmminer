@@ -1,5 +1,5 @@
-#ifndef PROCESSINGCHARTWIDGET_H
-#define PROCESSINGCHARTWIDGET_H
+#ifndef PIECHARTWIDGET_H
+#define PIECHARTWIDGET_H
 
 #include <QObject>
 #include <QWidget>
@@ -9,11 +9,11 @@
 #include <QPieSeries>
 #include <QVBoxLayout>
 
-class ProcessingChartWidget : public QWidget
+class PieChartWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ProcessingChartWidget(QWidget *parent = nullptr);
+    PieChartWidget(QWidget *parent = nullptr);
 public slots:
     void setData(const QMap<QString, double> &);
 private:
@@ -23,4 +23,4 @@ private:
     QVBoxLayout *m_mainLayout;
 };
 
-#endif // PROCESSINGCHARTWIDGET_H
+#endif // PIECHARTWIDGET_H

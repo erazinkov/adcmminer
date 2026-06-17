@@ -257,7 +257,8 @@ void Calibration::fillHistsEnergyByAlpha(const std::vector<std::vector<TH1D *> >
 
 void Calibration::setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &events,
                              const dec_ch_t &channels,
-                             double time)
+                             double time,
+                             const std::map<uint8_t, uint32_t> &counters)
 {
     time_ += time;
     for (const auto& [key, vec] : events) {
@@ -266,7 +267,25 @@ void Calibration::setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::ve
             it->second.insert(it->second.end(), vec.begin(), vec.end());
         }
     }
+    for (const auto& [key, value] : counters) {
+        auto [it, inserted] = counters_.try_emplace(key, value);
+        if (!inserted) {
+            it->second = value;
+        }
+    }
+    countersG_.clear();
     channels_ = channels;
+    for (size_t i{0}; i < channels_.g.size(); ++i) {
+        uint8_t key{*std::next(channels_.g.begin(), i)};
+        auto it = counters_.find(key);
+        if (it != counters_.end()) {
+            auto value{it->second};
+            auto [itt, inserted] = countersG_.try_emplace(i, value);
+            if (!inserted) {
+                itt->second = value;
+            }
+        }
+    }
 }
 
 void Calibration::resetData()
@@ -279,11 +298,26 @@ void Calibration::resetData()
     std::cout << "Reset time - ";
     time_ = 0.0;
     std::cout << "Done" << std::endl;
+    std::cout << "Reset counters - ";
+    for (auto& [key, value] : counters_) {
+        value = 0;
+    }
+    std::cout << "Done" << std::endl;
 }
 
 double Calibration::time() const
 {
     return time_;
+}
+
+const std::map<uint8_t, double> &Calibration::counters() const
+{
+    return counters_;
+}
+
+const std::map<uint8_t, double> &Calibration::countersG() const
+{
+    return countersG_;
 }
 
 
