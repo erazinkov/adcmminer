@@ -9,64 +9,39 @@ ProcessingWorker::ProcessingWorker(QObject *parent)
     m_histogramManager = new HistogramManager(AppConstants::MAX_GAMMA_NUMBER, AppConstants::MAX_ALPHA_NUMBER);
     m_calibration = new Calibration(m_histogramManager);
     m_dataDelegate = new DataDelegate;
-
 }
 
 void ProcessingWorker::doWorkS(const QString &path)
 {
     QMap<QString, double> m;
     auto start = std::chrono::steady_clock::now();
-//    std::cout << "Started!" << std::endl;
     m_decoder->process(path.toStdString());
-    if (m_decoder->events_m().empty()) {
+    if (m_decoder->events().empty() || qFuzzyCompare(m_decoder->time(), 0.0) || m_decoder->counters().empty()) {
         return;
     }
-//    auto m1 = m_decoder->events_m().size();
-//    for (auto it = m1.cbegin(); it != m1.cend(); ++it) {
-//        qDebug() << it->first.first << " " << it->first.second << " " << it->second.size();
-//    }
-
-//    std::cout << "Events with 1 pulse: " << m_decoder->events_1().size() << std::endl;
-//    std::cout << "Counters: " << m_decoder->counters().rawhits.size() << " " << m_decoder->counters().time << std::endl;
-//    for (size_t i{0}; i < m_decoder->counters().rawhits.size(); ++i)
-//    {
-//        std::cout << i << " " << m_decoder->counters().rawhits.at(i) << " ";
-//    }
-//    std::cout << std::endl;
-//    for (const auto &item : m_decoder->channels().a)
-//    {
-//        std::cout << static_cast<int>(item) << " ";
-//    }
-//    std::cout << std::endl;
-//    std::cout << "Finished!" << std::endl;
     auto stop = std::chrono::steady_clock::now();
-//    std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
-    m.insert("Decode", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
-
+    m.insert(tr("Decoding"), std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
     start = std::chrono::steady_clock::now();
-    m_calibration->setNewEvents(m_decoder->events_m(), m_decoder->channels());
+    m_calibration->setNewData(m_decoder->events(), m_decoder->channels(), m_decoder->time());
     stop = std::chrono::steady_clock::now();
-//    std::cout << "setNewEventsM Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     start = std::chrono::steady_clock::now();
     m_calibration->process();
     stop = std::chrono::steady_clock::now();
-//    std::cout << "process Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
-    m.insert("Calibration", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
+    m.insert(tr("Calibration"), std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
     start = std::chrono::steady_clock::now();
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
     stop = std::chrono::steady_clock::now();
-//    std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
-    m.insert("Hists", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
-    emit resultReadyProcessing(m, m_decoder->counters().time);
+    emit resultReadyProcessing(m, m_calibration->time());
 }
 
 void ProcessingWorker::doWorkReset()
 {
-    m_calibration->resetEvents();
+    m_calibration->resetData();
     m_histogramManager->resetAll();
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
+    emit resultReadyProcessing({}, m_calibration->time());
 }
 
 QVector<QPointF> ProcessingWorker::histToPoints(TH1D *hist) {

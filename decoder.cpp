@@ -7,10 +7,6 @@ Decoder::Decoder()
 {
 }
 
-std::vector<dec_ev_t> &Decoder::events()
-{
-    return events_;
-}
 
 void Decoder::process(const std::string &fileName)
 {
@@ -20,10 +16,9 @@ void Decoder::process(const std::string &fileName)
         std::clog << "Can't open file" << std::endl;
         return;
     }
-
     events_.clear();
-    events_1_.clear();
-    events_m_.clear();
+    counters_.clear();
+    time_ = 0.0;
 
     stor_packet_hdr_t hdr;
     stor_ev_hdr_t ev;
@@ -44,36 +39,15 @@ void Decoder::process(const std::string &fileName)
             ifs_ >> ev;
             switch (ev.np)
             {
-                case 1:
-                {
-                    dec_ev_1_t event;
-                    std::unique_ptr<stor_puls_t> d{new stor_puls_t()};
-                    ifs_ >> *d.get();
-                    event.d.index = d.get()->ch;
-                    event.d.amp = d.get()->a;
-                    event.tdc = d.get()->t;
-                    event.ts = ev.ts;
-                    events_1_.push_back(event);
-                    channels_.d.insert(d.get()->ch);
-                    break;
-                }
                 case 2:
                 {
                     std::unique_ptr<stor_puls_t> g{new stor_puls_t()};
                     std::unique_ptr<stor_puls_t> a{new stor_puls_t()};
                     ifs_ >> *g.get() >> *a.get();
-//                    dec_ev_t event;
-//                    event.g.index = g.get()->ch;
-//                    event.g.amp = g.get()->a;
-//                    event.a.index = a.get()->ch;
-//                    event.a.amp = g.get()->a;
-//                    event.tdc = g.get()->t - a.get()->t;
-//                    event.ts = ev.ts;
                     dec_ev_m_t event_m;
                     event_m.tdc = g.get()->t - a.get()->t;
                     event_m.amp = g.get()->a;
-                    events_m_[{g.get()->ch, a.get()->ch}].push_back(event_m);
-//                    events_.push_back(event);
+                    events_[{g.get()->ch, a.get()->ch}].push_back(event_m);
                     channels_.g.insert(g.get()->ch);
                     channels_.a.insert(a.get()->ch);
                     break;
@@ -91,21 +65,17 @@ void Decoder::process(const std::string &fileName)
         if (hdr.id == STOR_ID_CNTR && hdr.size > sizeof(stor_packet_hdr_t))
         {
             ifs_ >> counters;
-            if (!counters.n)
-            {
+            if (!counters.n) {
                 continue;
             }
 
-            if (counters_.rawhits.empty())
-            {
-                counters_.rawhits.resize(counters.n);
-            }
+            for (size_t i{0}; i < counters.n; ++i) {
 
-            for (size_t i{0}; i < counters.n; ++i)
-            {
-                counters_.rawhits.at(i) += counters.rawhits.at(i);
+                counters_[i] = counters.rawhits.at(i);
+
             }
-            counters_.time += counters.time;
+            time_ += counters.time;
+
 //            hdr.size -= sizeof(stor_packet_hdr_t);
 //            ifs_.ignore(hdr.size);
             continue;
@@ -115,24 +85,24 @@ void Decoder::process(const std::string &fileName)
     ifs_.close();
 }
 
-const std::vector<dec_ev_1_t> &Decoder::events_1() const
-{
-    return events_1_;
-}
-
-const dec_cnt_t &Decoder::counters() const
-{
-    return counters_;
-}
-
 const dec_ch_t &Decoder::channels() const
 {
     return channels_;
 }
 
-const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &Decoder::events_m() const
+const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &Decoder::events() const
 {
-    return events_m_;
+    return events_;
+}
+
+double Decoder::time() const
+{
+    return time_;
+}
+
+const std::map<uint8_t, uint32_t> &Decoder::counters() const
+{
+    return counters_;
 }
 
 

@@ -12,7 +12,7 @@
 
 #include "piecewiselinearfunction.h"
 
-Calibration::Calibration(const HistogramManager *histogramManager) : m_histogramManager{histogramManager}
+Calibration::Calibration(const HistogramManager *histogramManager) : histogramManager_{histogramManager}
 {
     for (auto ig{0}; ig < AppConstants::MAX_GAMMA_NUMBER; ++ig) {
         for (auto ia{0}; ia < AppConstants::MAX_ALPHA_NUMBER; ++ia) {
@@ -24,35 +24,35 @@ Calibration::Calibration(const HistogramManager *histogramManager) : m_histogram
 
 void Calibration::process()
 {
-    fillHistsTimeByGammaAlpha(m_histogramManager->histsTimeByGammaAlpha(), false);
+    fillHistsTimeByGammaAlpha(histogramManager_->histsTimeByGammaAlpha(), false);
     // TODO
-    for (size_t ig{0}; ig < m_histogramManager->histsTimeByGammaAlpha().size(); ++ig) {
-        for (size_t ia{0}; ia <  m_histogramManager->histsTimeByGammaAlpha().at(ig).size(); ++ia) {
+    for (size_t ig{0}; ig < histogramManager_->histsTimeByGammaAlpha().size(); ++ig) {
+        for (size_t ia{0}; ia <  histogramManager_->histsTimeByGammaAlpha().at(ig).size(); ++ia) {
             std::pair<uint8_t, uint8_t> p{ig, ia};
-            timeCorrections_[p] = m_histogramManager->histsTimeByGammaAlpha().at(ig).at(ia)->GetBinCenter(m_histogramManager->histsTimeByGammaAlpha().at(ig).at(ia)->GetMaximumBin());
+            timeCorrections_[p] = histogramManager_->histsTimeByGammaAlpha().at(ig).at(ia)->GetBinCenter(histogramManager_->histsTimeByGammaAlpha().at(ig).at(ia)->GetMaximumBin());
         }
     }
 
-    fillHistsTimeByGammaAlpha(m_histogramManager->histsTimeCorrectedByGammaAlpha(), true);
+    fillHistsTimeByGammaAlpha(histogramManager_->histsTimeCorrectedByGammaAlpha(), true);
 
-    fillHistsAmpByGammaAlpha(m_histogramManager->histsAmpByGammaAlphaSg(), m_histogramManager->histsAmpByGammaAlphaBg(), m_histogramManager->histsAmpByGammaAlphaRc());
+    fillHistsAmpByGammaAlpha(histogramManager_->histsAmpByGammaAlphaSg(), histogramManager_->histsAmpByGammaAlphaBg(), histogramManager_->histsAmpByGammaAlphaRc());
 
 
-    fillHistsAmpByGamma(m_histogramManager->histsAmpByGammaAlphaSg(), m_histogramManager->histsAmpByGammaAlphaBg(), m_histogramManager->histsAmpByGammaAlphaRc());
+    fillHistsAmpByGamma(histogramManager_->histsAmpByGammaAlphaSg(), histogramManager_->histsAmpByGammaAlphaBg(), histogramManager_->histsAmpByGammaAlphaRc());
 
 
     energyPeaksRaw_.clear();
-    for (size_t i{0}; i < std::min(m_histogramManager->histsAmpByGamma().size(), channels_.g.size()); ++i) {
-        peakFinder_.processRaw(m_histogramManager->histsAmpByGammaRc().at(i));
+    for (size_t i{0}; i < std::min(histogramManager_->histsAmpByGamma().size(), channels_.g.size()); ++i) {
+        peakFinder_.processRaw(histogramManager_->histsAmpByGammaRc().at(i));
         energyPeaksRaw_.push_back(peakFinder_.energyPeak());
     }
 
 
-    fillHistsEnergyByGammaAlpha(m_histogramManager->histsEnergyByGammaAlphaSg(), m_histogramManager->histsEnergyByGammaAlphaBg());
+    fillHistsEnergyByGammaAlpha(histogramManager_->histsEnergyByGammaAlphaSg(), histogramManager_->histsEnergyByGammaAlphaBg());
 //    fillHistsEnergyByGamma(m_histogramManager->histsEnergyByGammaAlphaSg(), m_histogramManager->histsEnergyByGammaAlphaBg());
-    fillHistsEnergyByAlpha(m_histogramManager->histsEnergyByGammaAlphaSg(), m_histogramManager->histsEnergyByGammaAlphaBg());
+    fillHistsEnergyByAlpha(histogramManager_->histsEnergyByGammaAlphaSg(), histogramManager_->histsEnergyByGammaAlphaBg());
 
-    fillHistsTimeByAlpha(m_histogramManager->histsTimeCorrectedByGammaAlpha());
+    fillHistsTimeByAlpha(histogramManager_->histsTimeCorrectedByGammaAlpha());
 }
 
 
@@ -125,12 +125,12 @@ void Calibration::fillHistEnergy(const std::vector<dec_ev_m_t> &events, TH1 *h, 
 
 void Calibration::fillHistsTimeByAlpha(const std::vector<std::vector<TH1D *> > &hists)
 {
-    for (size_t i{0}; i <  m_histogramManager->histsTimeCorrectedByAlpha().size(); ++i) {
-        m_histogramManager->histsTimeCorrectedByAlpha()[i]->Reset();
+    for (size_t i{0}; i <  histogramManager_->histsTimeCorrectedByAlpha().size(); ++i) {
+        histogramManager_->histsTimeCorrectedByAlpha()[i]->Reset();
     }
     for (size_t i{0}; i < hists.size(); ++i) {
         for (size_t j{0}; j <  hists.at(i).size(); ++j) {
-            m_histogramManager->histsTimeCorrectedByAlpha()[j]->Add(hists.at(i).at(j));
+            histogramManager_->histsTimeCorrectedByAlpha()[j]->Add(hists.at(i).at(j));
         }
     }
 }
@@ -165,13 +165,13 @@ void Calibration::fillHistsAmpByGammaAlpha(const std::vector<std::vector<TH1D *>
 
 void Calibration::fillHistsAmpByAlpha(const std::vector<std::vector<TH1D *>> &histsSg, const std::vector<std::vector<TH1D *> > &histsBg)
 {
-    for (size_t i{0}; i <  m_histogramManager->histsAmpByAlpha().size(); ++i) {
-        m_histogramManager->histsAmpByAlpha()[i]->Reset();
+    for (size_t i{0}; i <  histogramManager_->histsAmpByAlpha().size(); ++i) {
+        histogramManager_->histsAmpByAlpha()[i]->Reset();
     }
     for (size_t i{0}; i < histsSg.size(); ++i) {
         for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
-            m_histogramManager->histsAmpByAlpha()[j]->Add(histsSg.at(i).at(j));
-            m_histogramManager->histsAmpByAlpha()[j]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
+            histogramManager_->histsAmpByAlpha()[j]->Add(histsSg.at(i).at(j));
+            histogramManager_->histsAmpByAlpha()[j]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
         }
     }
 }
@@ -180,16 +180,16 @@ void Calibration::fillHistsAmpByGamma(const std::vector<std::vector<TH1D *> > &h
                                       const std::vector<std::vector<TH1D *> > &histsBg,
                                       const std::vector<std::vector<TH1D *> > &histsRc)
 {
-    for (size_t i{0}; i <  m_histogramManager->histsAmpByGamma().size(); ++i) {
-        m_histogramManager->histsAmpByGamma()[i]->Reset();
-        m_histogramManager->histsAmpByGammaRc()[i]->Reset();
+    for (size_t i{0}; i <  histogramManager_->histsAmpByGamma().size(); ++i) {
+        histogramManager_->histsAmpByGamma()[i]->Reset();
+        histogramManager_->histsAmpByGammaRc()[i]->Reset();
     }
     for (size_t i{0}; i < std::min(histsSg.size(), channels_.g.size()); ++i) {
         for (size_t j{0}; j <  std::min(histsSg.at(i).size(), channels_.a.size()); ++j) {
-            m_histogramManager->histsAmpByGamma()[i]->Add(histsSg.at(i).at(j));
-            m_histogramManager->histsAmpByGamma()[i]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
+            histogramManager_->histsAmpByGamma()[i]->Add(histsSg.at(i).at(j));
+            histogramManager_->histsAmpByGamma()[i]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
 
-            m_histogramManager->histsAmpByGammaRc()[i]->Add(histsRc.at(i).at(j));
+            histogramManager_->histsAmpByGammaRc()[i]->Add(histsRc.at(i).at(j));
         }
     }
 }
@@ -231,33 +231,36 @@ void Calibration::fillHistsEnergyByGammaAlpha(const std::vector<std::vector<TH1D
 
 void Calibration::fillHistsEnergyByGamma(const std::vector<std::vector<TH1D *> > &histsSg, const std::vector<std::vector<TH1D *> > &histsBg)
 {
-    for (size_t i{0}; i <  m_histogramManager->histsEnergyByGamma().size(); ++i) {
-        m_histogramManager->histsEnergyByGamma()[i]->Reset();
+    for (size_t i{0}; i <  histogramManager_->histsEnergyByGamma().size(); ++i) {
+        histogramManager_->histsEnergyByGamma()[i]->Reset();
     }
     for (size_t i{0}; i < histsSg.size(); ++i) {
         for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
-            m_histogramManager->histsEnergyByGamma()[i]->Add(histsSg.at(i).at(j));
-            m_histogramManager->histsEnergyByGamma()[i]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
+            histogramManager_->histsEnergyByGamma()[i]->Add(histsSg.at(i).at(j));
+            histogramManager_->histsEnergyByGamma()[i]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
         }
     }
 }
 
 void Calibration::fillHistsEnergyByAlpha(const std::vector<std::vector<TH1D *> > &histsSg, const std::vector<std::vector<TH1D *> > &histsBg)
 {
-    for (size_t i{0}; i <  m_histogramManager->histsEnergyByAlpha().size(); ++i) {
-        m_histogramManager->histsEnergyByAlpha()[i]->Reset();
+    for (size_t i{0}; i <  histogramManager_->histsEnergyByAlpha().size(); ++i) {
+        histogramManager_->histsEnergyByAlpha()[i]->Reset();
     }
     for (size_t i{0}; i < histsSg.size(); ++i) {
         for (size_t j{0}; j <  histsSg.at(i).size(); ++j) {
-            m_histogramManager->histsEnergyByAlpha()[j]->Add(histsSg.at(i).at(j));
-            m_histogramManager->histsEnergyByAlpha()[j]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
+            histogramManager_->histsEnergyByAlpha()[j]->Add(histsSg.at(i).at(j));
+            histogramManager_->histsEnergyByAlpha()[j]->Add(histsBg.at(i).at(j), -1.0 * 6.0 / 10.0);
         }
     }
 };
 
-void Calibration::setNewEvents(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &newEventsM, const dec_ch_t &channels)
+void Calibration::setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t> > &events,
+                             const dec_ch_t &channels,
+                             double time)
 {
-    for (const auto& [key, vec] : newEventsM) {
+    time_ += time;
+    for (const auto& [key, vec] : events) {
         auto [it, inserted] = events_m_.try_emplace(key, vec);
         if (!inserted) {
             it->second.insert(it->second.end(), vec.begin(), vec.end());
@@ -266,13 +269,21 @@ void Calibration::setNewEvents(const std::map<std::pair<uint8_t, uint8_t>, std::
     channels_ = channels;
 }
 
-void Calibration::resetEvents()
+void Calibration::resetData()
 {
-    std::cout << "Reset start" << std::endl;
+    std::cout << "Reset events - ";
     for (auto& [key, vec] : events_m_) {
         vec.clear();
     }
-    std::cout << "Reset stop" << std::endl;
+    std::cout << "Done" << std::endl;
+    std::cout << "Reset time - ";
+    time_ = 0.0;
+    std::cout << "Done" << std::endl;
+}
+
+double Calibration::time() const
+{
+    return time_;
 }
 
 

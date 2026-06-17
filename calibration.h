@@ -15,12 +15,17 @@ public:
     Calibration(const HistogramManager *histogramManager);
 
     void process();
-    void setNewEvents(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> &newEventsM, const dec_ch_t &channels);
-    void resetEvents();
-//    HistogramManager *histogramManager;
+    void setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> &events,
+                    const dec_ch_t &channels,
+                    double time);
+    void resetData();
+    //    HistogramManager *histogramManager;
+    double time() const;
+
 private:
-    const HistogramManager *m_histogramManager;
+    const HistogramManager *histogramManager_;
     std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> events_m_;
+    double time_;
     std::map<std::pair<uint8_t, uint8_t>, double> timeCorrections_;
     dec_ch_t channels_;
     std::unique_ptr<TimePeaksFinder> timePeaksFinder_; // TODO

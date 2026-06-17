@@ -30,6 +30,7 @@ HistChartWidget::HistChartWidget(const double xMin, const double xMax, QWidget *
     m_axisX = new QValueAxis();
     m_axisX->setRange(xMin, xMax);
     m_axisX->setTickCount(5);
+    m_axisX->setLabelFormat("%d");
     m_axisY = new QValueAxis();
     m_axisY->setRange(0, 1.0);
     m_axisY->setTickCount(5);

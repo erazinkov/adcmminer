@@ -36,14 +36,14 @@ MainWindow::MainWindow(QWidget *parent)
     m_widgetLeft = new QWidget(splitterWidget);
 
     m_gLleft = new QGridLayout(m_widgetLeft);
-    m_pushButtonStartStop = new QPushButton("Start", m_widgetLeft);
+    m_pushButtonStartStop = new QPushButton(tr("Start"), m_widgetLeft);
     m_pushButtonStartStop->setCheckable(true);
     m_gLleft->addWidget(m_pushButtonStartStop);
-    m_pushButtonReset = new QPushButton("Reset", m_widgetLeft);
+    m_pushButtonReset = new QPushButton(tr("Reset"), m_widgetLeft);
     m_gLleft->addWidget(m_pushButtonReset);
     QWidget *timeWidget = new QWidget(m_widgetLeft);
     QVBoxLayout *timeLayout = new QVBoxLayout(timeWidget);
-    m_timeLabel = new QLabel("Time, s", m_widgetLeft);
+    m_timeLabel = new QLabel(tr("Time, s"), m_widgetLeft);
     m_timeLabel->setAlignment(Qt::AlignCenter);
     timeLayout->addWidget(m_timeLabel);
     m_timeLineEdit = new QLineEdit(m_widgetLeft);
@@ -62,11 +62,11 @@ MainWindow::MainWindow(QWidget *parent)
     m_tabWidget = new QTabWidget(m_widgetRight);
 
     m_page_1 = new QWidget;
-    m_tabWidget->addTab(m_page_1, "TimeCorrectedByAlpha");
+    m_tabWidget->addTab(m_page_1, tr("Time"));
     m_page_2 = new QWidget;
-    m_tabWidget->addTab(m_page_2, "EnergyByAlpha");
+    m_tabWidget->addTab(m_page_2, tr("Energy"));
     m_page_3 = new QWidget;
-    m_tabWidget->addTab(m_page_3, "Processing");
+    m_tabWidget->addTab(m_page_3, tr("Processing"));
     m_gLright->addWidget(m_tabWidget);
 
     splitterWidget->addWidget(m_widgetLeft);
@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_controller, &Controller::handleResultsProcessing, this, &MainWindow::newDataProcessing);
     connect(m_pushButtonStartStop, &QPushButton::toggled, m_controller, &Controller::operateTimer);
     connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
-        m_pushButtonStartStop->setText(checked ? "Stop" : "Start");
+        m_pushButtonStartStop->setText(checked ? tr("Stop") : tr("Start"));
     });
     connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateReset);
 
