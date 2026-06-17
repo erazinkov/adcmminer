@@ -41,6 +41,19 @@ MainWindow::MainWindow(QWidget *parent)
     m_gLleft->addWidget(m_pushButtonStartStop);
     m_pushButtonReset = new QPushButton("Reset", m_widgetLeft);
     m_gLleft->addWidget(m_pushButtonReset);
+    QWidget *timeWidget = new QWidget(m_widgetLeft);
+    QVBoxLayout *timeLayout = new QVBoxLayout(timeWidget);
+    m_timeLabel = new QLabel("Time, s", m_widgetLeft);
+    m_timeLabel->setAlignment(Qt::AlignCenter);
+    timeLayout->addWidget(m_timeLabel);
+    m_timeLineEdit = new QLineEdit(m_widgetLeft);
+    m_timeLineEdit->setReadOnly(true);
+    m_timeLineEdit->setAlignment(Qt::AlignCenter);
+    timeLayout->addWidget(m_timeLineEdit);
+    timeLayout->setAlignment(Qt::AlignBottom);
+    m_gLleft->setRowStretch(2, 1);
+    m_gLleft->addWidget(timeWidget);
+
     m_widgetLeft->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
     m_widgetRight = new QWidget(splitterWidget);
@@ -62,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 //    m_dialog = nullptr;
 
-    m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)), this);
+    m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)));
     statusBar()->addWidget(m_statusMessageLabel);
 
 
@@ -141,8 +154,9 @@ void MainWindow::newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data,
     }
 }
 
-void MainWindow::newDataProcessing(const QMap<QString, double> &data)
+void MainWindow::newDataProcessing(const QMap<QString, double> &data, double s)
 {
+    m_timeLineEdit->setText(QString::number(s, 'f', 2));
     m_processingChartWidget->setData(data);
 }
 

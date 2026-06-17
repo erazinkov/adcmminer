@@ -25,7 +25,7 @@ public:
 private slots:
     void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
     void newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
-    void newDataProcessing(const QMap<QString, double> &data);
+    void newDataProcessing(const QMap<QString, double> &data, double s);
 
     void setupTimeCorrectedByAlpha();
     void setupEnergyByAlpha();
@@ -65,6 +65,9 @@ private:
     ProcessingChartWidget *m_processingChartWidget;
     QList<HistChartWidget *> m_histChartWidgetsTimeCorrectedByAlpha;
     QList<HistChartWidget *> m_histChartWidgetsEnergyByAlpha;
+
+    QLabel *m_timeLabel;
+    QLineEdit *m_timeLineEdit;
 
 };
 #endif // MAINWINDOW_H

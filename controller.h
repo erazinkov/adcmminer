@@ -27,7 +27,7 @@ signals:
 
     void handleResultsTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
     void handleResultsEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
-    void handleResultsProcessing(const QMap<QString, double> &data);
+    void handleResultsProcessing(const QMap<QString, double> &data, double s);
 
     void operateS(const QString &);
     void operateReset();

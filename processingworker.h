@@ -31,7 +31,7 @@ public slots:
 signals:
     void resultReadyTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
     void resultReadyEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
-    void resultReadyProcessing(const QMap<QString, double> &data);
+    void resultReadyProcessing(const QMap<QString, double> &data, double s);
 private:
     Decoder *m_decoder;
     DataDelegate *m_dataDelegate;

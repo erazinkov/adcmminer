@@ -12,7 +12,6 @@ void FileWatcherWorker::doWorkCheck()
     bool isModified{false};
     if (m_fileInfo->isFile() && m_fileInfo->exists()) {
         r.append(QString("<span style='color: green;'>%1</span> %2 %3").arg(QChar(0x2714)).arg(m_fileInfo->absoluteFilePath()).arg(m_fileInfo->lastModified().toString()));
-
         const auto p{m_fileInfo->lastModified()};
         m_fileInfo->refresh();
         const auto n{m_fileInfo->lastModified()};

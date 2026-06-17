@@ -95,7 +95,7 @@ void MySpinnerWidget::changeEvent(QEvent *event)
 
 QSize MySpinnerWidget::minimumSizeHint() const
 {
-    return QSize(20, 20);
+    return QSize(10, 10);
 }
 
 //QSize MySpinnerWidget::sizeHint() const

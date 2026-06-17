@@ -16,15 +16,21 @@ void ProcessingWorker::doWorkS(const QString &path)
 {
     QMap<QString, double> m;
     auto start = std::chrono::steady_clock::now();
-    std::cout << "Started!" << std::endl;
+//    std::cout << "Started!" << std::endl;
     m_decoder->process(path.toStdString());
+    if (m_decoder->events_m().empty()) {
+        return;
+    }
+//    auto m1 = m_decoder->events_m().size();
+//    for (auto it = m1.cbegin(); it != m1.cend(); ++it) {
+//        qDebug() << it->first.first << " " << it->first.second << " " << it->second.size();
+//    }
 
-//    std::cout << "Events with 2 pulses: " << m_decoder->events().size() << std::endl;
 //    std::cout << "Events with 1 pulse: " << m_decoder->events_1().size() << std::endl;
 //    std::cout << "Counters: " << m_decoder->counters().rawhits.size() << " " << m_decoder->counters().time << std::endl;
 //    for (size_t i{0}; i < m_decoder->counters().rawhits.size(); ++i)
 //    {
-//        std::cout << m_decoder->counters().rawhits.at(i) << " ";
+//        std::cout << i << " " << m_decoder->counters().rawhits.at(i) << " ";
 //    }
 //    std::cout << std::endl;
 //    for (const auto &item : m_decoder->channels().a)
@@ -32,27 +38,27 @@ void ProcessingWorker::doWorkS(const QString &path)
 //        std::cout << static_cast<int>(item) << " ";
 //    }
 //    std::cout << std::endl;
-    std::cout << "Finished!" << std::endl;
+//    std::cout << "Finished!" << std::endl;
     auto stop = std::chrono::steady_clock::now();
-    std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+//    std::cout << "Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     m.insert("Decode", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
 
     start = std::chrono::steady_clock::now();
     m_calibration->setNewEvents(m_decoder->events_m(), m_decoder->channels());
     stop = std::chrono::steady_clock::now();
-    std::cout << "setNewEventsM Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+//    std::cout << "setNewEventsM Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     start = std::chrono::steady_clock::now();
     m_calibration->process();
     stop = std::chrono::steady_clock::now();
-    std::cout << "process Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+//    std::cout << "process Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     m.insert("Calibration", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
     start = std::chrono::steady_clock::now();
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
     stop = std::chrono::steady_clock::now();
-    std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+//    std::cout << "doDataDelegateWork Time elapsed, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     m.insert("Hists", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
-    emit resultReadyProcessing(m);
+    emit resultReadyProcessing(m, m_decoder->counters().time);
 }
 
 void ProcessingWorker::doWorkReset()
