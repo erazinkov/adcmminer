@@ -27,12 +27,15 @@ public:
 
     const std::map<uint8_t, double> &countersG() const;
 
+    const std::map<uint8_t, double> &countersA() const;
+
 private:
     const HistogramManager *histogramManager_;
     std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> events_m_;
     double time_;
     std::map<uint8_t, double> counters_;
     std::map<uint8_t, double> countersG_;
+    std::map<uint8_t, double> countersA_;
     std::map<std::pair<uint8_t, uint8_t>, double> timeCorrections_;
     dec_ch_t channels_;
     std::unique_ptr<TimePeaksFinder> timePeaksFinder_; // TODO

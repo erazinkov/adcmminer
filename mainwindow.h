@@ -26,7 +26,7 @@ public:
 private slots:
     void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
     void newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
-    void newDataProcessing(const QMap<QString, double> &data, double s);
+    void newDataProcessing(const QMap<QString, double> &data, double t, const QMap<QString, double> &countersA, const QMap<QString, double> &countersG);
 
     void setupTimeCorrectedByAlpha();
     void setupEnergyByAlpha();
@@ -70,7 +70,8 @@ private:
     QLabel *m_timeLabel;
     QLineEdit *m_timeLineEdit;
 
-    BarChartWidget *m_barChartWidget;
+    BarChartWidget *m_barChartWidgetCountersAlpha;
+    BarChartWidget *m_barChartWidgetCountersGamma;
 
 };
 #endif // MAINWINDOW_H

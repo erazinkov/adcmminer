@@ -274,6 +274,7 @@ void Calibration::setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::ve
         }
     }
     countersG_.clear();
+    countersA_.clear();
     channels_ = channels;
     for (size_t i{0}; i < channels_.g.size(); ++i) {
         uint8_t key{*std::next(channels_.g.begin(), i)};
@@ -281,6 +282,17 @@ void Calibration::setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::ve
         if (it != counters_.end()) {
             auto value{it->second};
             auto [itt, inserted] = countersG_.try_emplace(i, value);
+            if (!inserted) {
+                itt->second = value;
+            }
+        }
+    }
+    for (size_t i{0}; i < channels_.a.size(); ++i) {
+        uint8_t key{*std::next(channels_.a.begin(), i)};
+        auto it = counters_.find(key);
+        if (it != counters_.end()) {
+            auto value{it->second};
+            auto [itt, inserted] = countersA_.try_emplace(i, value);
             if (!inserted) {
                 itt->second = value;
             }
@@ -318,6 +330,11 @@ const std::map<uint8_t, double> &Calibration::counters() const
 const std::map<uint8_t, double> &Calibration::countersG() const
 {
     return countersG_;
+}
+
+const std::map<uint8_t, double> &Calibration::countersA() const
+{
+    return countersA_;
 }
 
 

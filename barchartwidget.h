@@ -8,7 +8,7 @@
 #include <QVBoxLayout>
 #include <QValueAxis>
 #include <QBarCategoryAxis>
-#include <QBarSet>
+
 
 class BarChartWidget : public QWidget
 {
@@ -16,18 +16,19 @@ class BarChartWidget : public QWidget
 public:
     explicit BarChartWidget(const QString &title, QWidget *parent = nullptr);
 
-signals:
+public slots:
+    void setData(const QMap<QString, double> &);
 
 private:
     QChart *m_chart;
     QChartView *m_chartView;
     QBarSeries *m_series;
     QVBoxLayout *m_mainLayout;
-    QBarSet *m_set;
 
     QBarCategoryAxis *m_axisX;
     QValueAxis *m_axisY;
     QStringList m_categories;
+    QString m_title;
 };
 
 #endif // BARCHARTWIDGET_H

@@ -30,10 +30,15 @@ void ProcessingWorker::doWorkS(const QString &path)
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
     stop = std::chrono::steady_clock::now();
-    for (const auto& [key, value] : m_calibration->countersG()) {
-        std::cout << key << " " << value << std::endl;
+    QMap<QString, double> countersA;
+    for (const auto& [key, value] : m_calibration->countersA()) {
+        countersA[QString::number(key)] = value;
     }
-    emit resultReadyProcessing(m, m_calibration->time());
+    QMap<QString, double> countersG;
+    for (const auto& [key, value] : m_calibration->countersG()) {
+        countersG[QString::number(key)] = value;
+    }
+    emit resultReadyProcessing(m, m_calibration->time(), countersA, countersG);
 }
 
 void ProcessingWorker::doWorkReset()
@@ -42,7 +47,7 @@ void ProcessingWorker::doWorkReset()
     m_histogramManager->resetAll();
     histToPointsTimeCorrectedByAlpha();
     histToPointsAmpByGamma();
-    emit resultReadyProcessing({}, m_calibration->time());
+    emit resultReadyProcessing({}, m_calibration->time(), {}, {});
 }
 
 QVector<QPointF> ProcessingWorker::histToPoints(TH1D *hist) {
