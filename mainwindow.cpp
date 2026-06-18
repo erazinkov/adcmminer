@@ -6,225 +6,178 @@
 #include "calibration.h"
 #include "datadelegate.h"
 
+#include "piechartwidget.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QWidget *widget = new QWidget;
-    m_mainLayout = new QHBoxLayout(widget);
-    setCentralWidget(widget);
-    m_dialog = nullptr;
-    m_path = AppConstants::PATH;
-//    m_path = "/misc/agpk_std/adcm.dat";
-    m_fileWatcher = new FileWatcher(m_path);
-    m_fileWatcher->moveToThread(&workerThread);
-    m_fileWatcherTimer = new QTimer(this);
-    m_fileWatcherTimer->setInterval(1000);
+    m_settings = new Settings("settings.ini", this);
+    m_path = m_settings->path();
+
+    QMenu *fileMenu = new QMenu(tr("&File"), this);
+    QAction *openAction = fileMenu->addAction(tr("&Open..."), this, &MainWindow::openFile);
+    openAction->setShortcuts(QKeySequence::Open);
+    QAction *quitAction = fileMenu->addAction(tr("E&xit"));
+    quitAction->setShortcuts(QKeySequence::Quit);
+    menuBar()->addMenu(fileMenu);
+
+    connect(quitAction, &QAction::triggered, this, &MainWindow::close);
+
+
+    m_mainWidget = new QWidget(this);
+    m_mainLayout = new QGridLayout(m_mainWidget);
+    setCentralWidget(m_mainWidget);
+
+    QSplitter *splitterWidget = new QSplitter(m_mainWidget);
+    m_mainLayout->addWidget(splitterWidget);
+
+    m_widgetLeft = new QWidget(splitterWidget);
+
+    m_gLleft = new QGridLayout(m_widgetLeft);
+    m_pushButtonStartStop = new QPushButton(tr("Start"), m_widgetLeft);
+    m_pushButtonStartStop->setCheckable(true);
+    m_gLleft->addWidget(m_pushButtonStartStop);
+    m_pushButtonReset = new QPushButton(tr("Reset"), m_widgetLeft);
+    m_gLleft->addWidget(m_pushButtonReset);
+    QWidget *timeWidget = new QWidget(m_widgetLeft);
+    QVBoxLayout *timeLayout = new QVBoxLayout(timeWidget);
+    m_timeLabel = new QLabel(tr("Time, s"), m_widgetLeft);
+    m_timeLabel->setAlignment(Qt::AlignCenter);
+    timeLayout->addWidget(m_timeLabel);
+    m_timeLineEdit = new QLineEdit(m_widgetLeft);
+    m_timeLineEdit->setReadOnly(true);
+    m_timeLineEdit->setAlignment(Qt::AlignCenter);
+    timeLayout->addWidget(m_timeLineEdit);
+    timeLayout->setAlignment(Qt::AlignBottom);
+    m_gLleft->setRowStretch(2, 1);
+    m_gLleft->addWidget(timeWidget);
+
+    m_widgetLeft->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+
+    m_widgetRight = new QWidget(splitterWidget);
+    m_gLright = new QGridLayout(m_widgetRight);
+
+    m_tabWidget = new QTabWidget(m_widgetRight);
+
+    m_page_1 = new QWidget;
+    m_tabWidget->addTab(m_page_1, tr("Time"));
+    m_page_2 = new QWidget;
+    m_tabWidget->addTab(m_page_2, tr("Energy"));
+    m_page_3 = new QWidget;
+    m_tabWidget->addTab(m_page_3, tr("Processing"));
+    m_gLright->addWidget(m_tabWidget);
+
+    splitterWidget->addWidget(m_widgetLeft);
+    splitterWidget->addWidget(m_widgetRight);
+
+
+//    m_dialog = nullptr;
+
+    m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)));
+    statusBar()->addWidget(m_statusMessageLabel);
+
 
     m_controller = new Controller(m_path);
 
-    m_pushButtonStartStop = new QPushButton("Start", this);
-    m_pushButtonStartStop->setCheckable(true);
 
-    m_pushButtonReset = new QPushButton("Reset", this);
-
-
-
-    m_widgetLeft = new QWidget(widget);
-    m_widgetRight = new QWidget(widget);
-
-    m_gLleft = new QGridLayout(m_widgetLeft);
-//    m_gLright = new QGridLayout(m_widgetRight);
-
-    m_gLleft->addWidget(m_pushButtonStartStop, 0, 0);
     m_pushButtonStartStop->setStyleSheet(
         "QPushButton {"
         "   color: white;"
         "}"
         "QPushButton:checked {"
-        "   background-color: #d32f2f;"
+        "   background-color: red;"
         "}"
         "QPushButton:checked:hover {"
-        "   background-color: #f44336;"
+        "   background-color: coral;"
         "}"
         "QPushButton:!checked {"
-        "   background-color: #388e3c;"
+        "   background-color: green;"
         "}"
         "QPushButton:!checked:hover {"
-        "   background-color: #4caf50;"
+        "   background-color: lime;"
         "}"
     );
-    m_gLleft->addWidget(m_pushButtonReset, 1, 0);
 
-    m_tabWidget = new QTabWidget(m_widgetRight);
-    m_page_1 = new QWidget;
-    m_tabWidget->addTab(m_page_1, "TimeByAlpha");
-    m_page_2 = new QWidget;
-    m_tabWidget->addTab(m_page_2, "AmpByGamma");
-    m_mainLayout->addWidget(m_widgetLeft);
-    m_mainLayout->addWidget(m_tabWidget);
-
+    connect(m_controller, &Controller::handleResultsReadyCheck, [this](const QString &message){
+        m_statusMessageLabel->setText(message);
+    });
 
     connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
-    connect(m_controller, &Controller::handleResultsAmpByGamma, this, &MainWindow::newDataAmpByGamma);
-    connect(&workerThread, &QThread::finished, m_fileWatcher, &QObject::deleteLater);
-    connect(m_fileWatcherTimer, &QTimer::timeout, m_fileWatcher, &FileWatcher::operate);
-
-    connect(m_fileWatcher, &FileWatcher::onFileChanged, [this](const QString &path){
-        qInfo() << path;
-        m_controller->operateS();
-    });
-
-
+    connect(m_controller, &Controller::handleResultsEnergyByAlpha, this, &MainWindow::newDataEnergyByAlpha);
+    connect(m_controller, &Controller::handleResultsProcessing, this, &MainWindow::newDataProcessing);
+    connect(m_pushButtonStartStop, &QPushButton::toggled, m_controller, &Controller::operateTimer);
     connect(m_pushButtonStartStop, &QPushButton::toggled, [this](bool checked){
-        if (checked) {
-            m_pushButtonStartStop->setText("Stop");
-            m_fileWatcherTimer->start();
-        } else {
-            m_pushButtonStartStop->setText("Start");
-            m_fileWatcherTimer->stop();
-        }
+        m_pushButtonStartStop->setText(checked ? tr("Stop") : tr("Start"));
     });
-
-    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateR);
-
-    workerThread.start();
+    connect(m_pushButtonReset, &QPushButton::clicked, m_controller, &Controller::operateReset);
 
     setupTimeCorrectedByAlpha();
-    setupAmpByGamma();
-
-//    onCurrentTextChanged(m_comboBox->currentText());
+    setupEnergyByAlpha();
+    setupProcessing();
 }
 
 MainWindow::~MainWindow()
 {
-    if (m_fileWatcherTimer != nullptr) {
-        m_fileWatcherTimer->stop();
-    }
-    workerThread.quit();
-    workerThread.wait();
+    m_settings->writeSettings();
     delete ui;
 }
 
-void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data)
+void MainWindow::newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
 {
-    qDebug() << "newDataTimeCorrectedByAlpha - received";
-    m_dataTimeCorrectedByAlpha.clear();
-    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
-    {
-        m_dataTimeCorrectedByAlpha.insert(i.key(), i.value());
+    if (data.size() != m_histChartWidgetsTimeCorrectedByAlpha.size()) {
+        // TODO ?
     }
-    m_seriesTimeCorrectesByAlpha.clear();
-    auto dataColor{QColorConstants::Blue};
-    for (auto i = m_dataTimeCorrectedByAlpha.cbegin(), end = m_dataTimeCorrectedByAlpha.cend(); i != end; ++i)
-    {
-        QLineSeries *series = new QLineSeries();
-        series->append(i.value());
-        series->setName(i.key());
-        QAreaSeries *areaSeries = new QAreaSeries(series);
-        QPen pen;
-        pen.setWidth(1);
-        pen.setColor(dataColor);
-        areaSeries->setPen(pen);
-        areaSeries->setColor(dataColor);
-        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-        dataGradient.setColorAt(0.0, dataColor);
-        dataGradient.setColorAt(1.0, dataColor.lighter());
-        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-        areaSeries->setOpacity(0.75);
-        areaSeries->setBrush(dataGradient);
-        areaSeries->setColor(dataColor);
-        areaSeries->setName(i.key());
-        m_seriesTimeCorrectesByAlpha.append(areaSeries);
+    auto j{0};
+    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i) {
+        if (j < m_histChartWidgetsTimeCorrectedByAlpha.size()) {
+            m_histChartWidgetsTimeCorrectedByAlpha.at(j)->setHeader(text[i.key()]);
+            m_histChartWidgetsTimeCorrectedByAlpha.at(j)->setData(i.key(), i.value());
+        }
+        j++;
     }
-
-    for (auto i{0}; i < std::min(m_seriesTimeCorrectesByAlpha.size(), m_chartWidgetsTimeCorrectedByAlpha.size()); ++i)
-    {
-        m_chartWidgetsTimeCorrectedByAlpha.at(i)->setTitle(m_seriesTimeCorrectesByAlpha.at(i)->name());
-        m_chartWidgetsTimeCorrectedByAlpha.at(i)->process({m_seriesTimeCorrectesByAlpha.at(i)});
-    }
-
-//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
-//    {
-//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-//        m_mainWidgetList.at(i)->process({m_series.at(i)});
-//    }
 }
 
-void MainWindow::newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
+void MainWindow::newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text)
 {
-    qDebug() << "newDataAmpByGamma - received";
-    if (data.size() != m_dataAmpByGamma.size()) {
-        setupAmpByGamma(data.size());
+    if (data.size() != m_histChartWidgetsEnergyByAlpha.size()) {
+        // TODO ?
     }
-    m_dataAmpByGamma.clear();
-    QList<QStringList> t;
-    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i)
-    {
-        m_dataAmpByGamma.insert(i.key(), i.value());
-        t.append(text[i.key()]);
+    auto j{0};
+    for (auto i = data.cbegin(), end = data.cend(); i != end; ++i) {
+        if (j < m_histChartWidgetsEnergyByAlpha.size()) {
+            m_histChartWidgetsEnergyByAlpha.at(j)->setHeader(text[i.key()]);
+            m_histChartWidgetsEnergyByAlpha.at(j)->setData(i.key(), i.value());
+        }
+        j++;
     }
-    m_seriesAmpByGamma.clear();
+}
 
-    auto dataColor{QColorConstants::Green};
-    for (auto i = m_dataAmpByGamma.cbegin(), end = m_dataAmpByGamma.cend(); i != end; ++i)
-    {
-        QLineSeries *series = new QLineSeries();
-        series->append(i.value());
-        series->setName(i.key());
-        QAreaSeries *areaSeries = new QAreaSeries(series);
-        QPen pen;
-        pen.setWidth(1);
-        pen.setColor(dataColor);
-        areaSeries->setPen(pen);
-        areaSeries->setColor(dataColor);
-        QLinearGradient dataGradient(QPointF(0, 0), QPointF(0, 1));
-        dataGradient.setColorAt(0.0, dataColor);
-        dataGradient.setColorAt(1.0, dataColor.lighter());
-        dataGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-        areaSeries->setOpacity(0.75);
-        areaSeries->setBrush(dataGradient);
-        areaSeries->setColor(dataColor);
-        areaSeries->setName(i.key());
-        m_seriesAmpByGamma.append(areaSeries);
-
-    }
-
-    qDebug() << text;
-
-    for (auto i{0}; i < std::min(m_seriesAmpByGamma.size(), m_chartWidgetsAmpByGamma.size()); ++i)
-    {
-//        m_chartWidgetsAmpByGamma.at(i)->setTitle(m_seriesAmpByGamma.at(i)->name());
-//        m_chartWidgetsAmpByGamma.at(i)->setTitle("");
-
-        m_chartWidgetsAmpByGamma.at(i)->process({m_seriesAmpByGamma.at(i)});
-        m_chartWidgetsAmpByGamma.at(i)->setHeader(t.at(i));
-    }
-
-//    for (auto i{0}; i < m_mainWidgetList.size(); ++i)
-//    {
-//        m_mainWidgetList.at(i)->setTitle(m_series.at(i)->name());
-//        m_mainWidgetList.at(i)->process({m_series.at(i)});
-//    }
+void MainWindow::newDataProcessing(const QMap<QString, double> &data, double t, const QMap<QString, double> &countersA, const QMap<QString, double> &countersG)
+{
+    m_timeLineEdit->setText(QString::number(t, 'f', 2));
+    m_pieChartWidget->setData(data);
+    m_barChartWidgetCountersAlpha->setData(countersA);
+    m_barChartWidgetCountersGamma->setData(countersG);
 }
 
 void MainWindow::setupTimeCorrectedByAlpha()
 {
-    m_page_1->setLayout(new QGridLayout(m_page_1));
+    m_page_1->setLayout(new QGridLayout());
     static_cast<QGridLayout*>(m_page_1->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_1->layout())->setContentsMargins(0, 0, 0, 0);
-    m_chartWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
+    m_histChartWidgetsTimeCorrectedByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
     auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_ALPHA_NUMBER)))};
     auto index{0};
     for (auto ir{0}; ir < cd; ++ir)
     {
         for (auto ic{0}; ic < cd; ++ic)
         {
-            if (index < m_chartWidgetsTimeCorrectedByAlpha.size())
+            if (index < m_histChartWidgetsTimeCorrectedByAlpha.size())
             {
-                m_chartWidgetsTimeCorrectedByAlpha[index] = new ChartWidget;
-                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_chartWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
+                m_histChartWidgetsTimeCorrectedByAlpha[index] = new HistChartWidget(-100.0, 100.0);
+                static_cast<QGridLayout*>(m_page_1->layout())->addWidget(m_histChartWidgetsTimeCorrectedByAlpha.at(index), ir, ic);
                 index++;
             }
         }
@@ -236,26 +189,26 @@ void MainWindow::setupTimeCorrectedByAlpha()
     }
 }
 
-void MainWindow::setupAmpByGamma(const int gammaNumber)
+void MainWindow::setupEnergyByAlpha()
 {
     if (m_page_2->layout()) {
         delete m_page_2->layout();
     }
-    for (auto i{0}; i < m_chartWidgetsAmpByGamma.size(); ++i) {
-        m_chartWidgetsAmpByGamma.at(i)->deleteLater();
+    for (auto i{0}; i < m_histChartWidgetsEnergyByAlpha.size(); ++i) {
+        m_histChartWidgetsEnergyByAlpha.at(i)->deleteLater();
     }
-    m_page_2->setLayout(new QGridLayout(m_page_2));
+    m_page_2->setLayout(new QGridLayout());
     static_cast<QGridLayout*>(m_page_2->layout())->setSpacing(0);
     static_cast<QGridLayout*>(m_page_2->layout())->setContentsMargins(0, 0, 0, 0);
-    m_chartWidgetsAmpByGamma.resize(gammaNumber);
-    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(gammaNumber)))};
+    m_histChartWidgetsEnergyByAlpha.resize(AppConstants::MAX_ALPHA_NUMBER);
+    auto cd{static_cast<qsizetype>(std::ceil(std::sqrt(AppConstants::MAX_ALPHA_NUMBER)))};
     auto index{0};
     for (auto ir{0}; ir < cd; ++ir) {
         for (auto ic{0}; ic < cd; ++ic) {
-            if (index < m_chartWidgetsAmpByGamma.size()) {
-                m_chartWidgetsAmpByGamma[index] = new ChartWidget;
+            if (index < m_histChartWidgetsEnergyByAlpha.size()) {
+                m_histChartWidgetsEnergyByAlpha[index] = new HistChartWidget(0.0, 8'000.0);
 //                connect(m_chartWidgetsAmpByGamma[index], &ChartWidget::hovered, this, &MainWindow::showDialog);
-                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_chartWidgetsAmpByGamma.at(index), ir, ic);
+                static_cast<QGridLayout*>(m_page_2->layout())->addWidget(m_histChartWidgetsEnergyByAlpha.at(index), ir, ic);
                 index++;
             }
         }
@@ -264,6 +217,18 @@ void MainWindow::setupAmpByGamma(const int gammaNumber)
         static_cast<QGridLayout*>(m_page_2->layout())->setRowStretch(i, 1);
         static_cast<QGridLayout*>(m_page_2->layout())->setColumnStretch(i, 1);
     }
+}
+
+void MainWindow::setupProcessing()
+{
+    QGridLayout *gl = new QGridLayout(m_page_3);
+    m_page_3->setLayout(gl);
+    m_pieChartWidget = new PieChartWidget(m_page_3);
+    gl->addWidget(m_pieChartWidget, 0, 0);
+    m_barChartWidgetCountersAlpha = new BarChartWidget(tr("A"), m_page_3);
+    gl->addWidget(m_barChartWidgetCountersAlpha, 0, 1);
+    m_barChartWidgetCountersGamma = new BarChartWidget(tr("G"), m_page_3);
+    gl->addWidget(m_barChartWidgetCountersGamma, 1, 1);
 }
 
 
@@ -293,6 +258,18 @@ void MainWindow::showDialog(QString title) {
             connect(m_dialog, &QDialog::finished, this, [this]() {
                 m_dialog = nullptr;
             });
-       }
+}
 
+void MainWindow::openFile() {
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open File"),
+        "",
+        tr("ADCM Files (*.dat);;All Files (*.*)"));
 
+    if (fileName.isEmpty()) {
+        return;
+    }
+    m_path = fileName;
+    m_controller->operatePath(m_path);
+    m_settings->setPath(m_path);
+}

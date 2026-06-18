@@ -2,12 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QThread>
 
-#include "filewatcher.h"
-#include "chartwidget.h"
-#include "controller.h"
 #include "constants.h"
+#include "settings.h"
+#include "piechartwidget.h"
+#include "histchartwidget.h"
+#include "barchartwidget.h"
+
+#include "controller.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,52 +18,60 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    QThread workerThread;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
 
 private slots:
-    void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &);
-    void newDataAmpByGamma(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+    void newDataTimeCorrectedByAlpha(const QMap<QString, QList<QPointF>> &, const QMap<QString, QStringList> &text);
+    void newDataEnergyByAlpha(const QMap<QString, QList<QPointF>> &data, const QMap<QString, QStringList> &text);
+    void newDataProcessing(const QMap<QString, double> &data, double t, const QMap<QString, double> &countersA, const QMap<QString, double> &countersG);
 
     void setupTimeCorrectedByAlpha();
-    void setupAmpByGamma(const int gammaNumber = AppConstants::MAX_GAMMA_NUMBER);
+    void setupEnergyByAlpha();
+    void setupProcessing();
 
     void showDialog(QString);
 
+    void openFile();
+
 private:
     Ui::MainWindow *ui;
-    FileWatcher *m_fileWatcher;
+    Settings *m_settings;
     QString m_path;
+    QLabel *m_statusMessageLabel;
 
-    QList<ChartWidget *> m_chartWidgetsTimeCorrectedByAlpha;
-    QList<QAbstractSeries *> m_seriesTimeCorrectesByAlpha;
-    QMap<QString, QList<QPointF>> m_dataTimeCorrectedByAlpha;
-
-    QList<ChartWidget *> m_chartWidgetsAmpByGamma;
-    QList<QAbstractSeries *> m_seriesAmpByGamma;
-    QMap<QString, QList<QPointF>> m_dataAmpByGamma;
-
-    QTimer *m_fileWatcherTimer;
     QPushButton *m_pushButtonStartStop;
     QPushButton *m_pushButtonReset;
+
     Controller *m_controller;
 
     QTabWidget *m_tabWidget;
 
     QWidget *m_page_1;
     QWidget *m_page_2;
+    QWidget *m_page_3;
 
-    QHBoxLayout *m_mainLayout;
+    QWidget *m_mainWidget;
+    QGridLayout *m_mainLayout;
 
     QWidget *m_widgetLeft;
     QWidget *m_widgetRight;
 
     QGridLayout *m_gLleft;
-//    QGridLayout *m_gLright;
+    QGridLayout *m_gLright;
     QDialog *m_dialog;
+
+    PieChartWidget *m_pieChartWidget;
+    QList<HistChartWidget *> m_histChartWidgetsTimeCorrectedByAlpha;
+    QList<HistChartWidget *> m_histChartWidgetsEnergyByAlpha;
+
+    QLabel *m_timeLabel;
+    QLineEdit *m_timeLineEdit;
+
+    BarChartWidget *m_barChartWidgetCountersAlpha;
+    BarChartWidget *m_barChartWidgetCountersGamma;
 
 };
 #endif // MAINWINDOW_H

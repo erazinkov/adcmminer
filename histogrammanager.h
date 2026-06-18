@@ -22,6 +22,7 @@ public:
                std::shared_ptr<TH1> hist) const;
     void saveToRootFile(const std::string &fileName,
                         std::shared_ptr<TH1> hist) const;
+    void resetAll();
 
     const std::vector<std::vector<TH1D *> > &histsAmpByGammaAlpha() const;
     const std::vector<std::vector<TH1D *> > &histsTimeByGammaAlpha() const;

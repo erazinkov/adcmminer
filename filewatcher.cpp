@@ -13,9 +13,14 @@ void FileWatcher::operate()
     m_fileInfo->refresh();
     if (lm != m_fileInfo->lastModified())
     {
-        const QString pathAndTime{QString("%1 - %2").arg(m_path).arg(m_fileInfo->lastModified().toString())};
+        const QString pathAndTime{QString("%1 - %2").arg(m_fileInfo->path()).arg(m_fileInfo->lastModified().toString())};
         emit(onFileChanged(pathAndTime));
     }
+}
+
+void FileWatcher::operateNewPath(const QString &newPath)
+{
+    m_fileInfo->setFile(newPath);
 }
 
 void FileWatcher::fileChanged(const QString &path)
