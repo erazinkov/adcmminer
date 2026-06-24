@@ -16,7 +16,6 @@ Controller::Controller(const QString &path)
     connect(this, &Controller::operatePath, m_fileWatcherWorker, &FileWatcherWorker::doWorkPath);
 //    connect(m_fileWatcherWorker, &FileWatcherWorker::resultReadyCheck, this, &Controller::handleResultsReadyCheck);
     connect(m_fileWatcherThread, &QThread::finished, m_fileWatcherWorker, &QObject::deleteLater);
-
 //    connect(this, &Controller::operateS, m_processingWorker, &ProcessingWorker::doWorkS);
     connect(this, &Controller::operateReset, m_processingWorker, &ProcessingWorker::doWorkReset);
     connect(m_processingWorker, &ProcessingWorker::resultReadyTimeCorrectedByAlpha, this, &Controller::handleResultsTimeCorrectedByAlpha);
@@ -33,6 +32,8 @@ Controller::Controller(const QString &path)
 
     m_fileWatcherThread->start();
     m_processingThread->start();
+
+
 }
 
 Controller::~Controller()

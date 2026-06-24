@@ -78,7 +78,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)));
     statusBar()->addWidget(m_statusMessageLabel);
 
-
     m_controller = new Controller(m_path);
 
 

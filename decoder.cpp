@@ -25,6 +25,9 @@ void Decoder::process(const std::string &fileName)
     adcm_cmap_t cmap;
     adcm_counters_t counters;
 
+    stor_puls_t *g{new stor_puls_t()};
+    stor_puls_t *a{new stor_puls_t()};
+
     while (ifs_)
     {
         ifs_ >> hdr;
@@ -41,15 +44,8 @@ void Decoder::process(const std::string &fileName)
             {
                 case 2:
                 {
-                    std::unique_ptr<stor_puls_t> g{new stor_puls_t()};
-                    std::unique_ptr<stor_puls_t> a{new stor_puls_t()};
-                    ifs_ >> *g.get() >> *a.get();
-                    dec_ev_m_t event_m;
-                    event_m.tdc = g.get()->t - a.get()->t;
-                    event_m.amp = g.get()->a;
-                    events_[{g.get()->ch, a.get()->ch}].push_back(event_m);
-                    channels_.g.insert(g.get()->ch);
-                    channels_.a.insert(a.get()->ch);
+                    ifs_ >> *g >> *a;
+                    events_[{g->ch, a->ch}].emplace_back(dec_ev_m_t{g->t - a->t, g->a});
                     break;
                 }
                 default:
@@ -82,7 +78,20 @@ void Decoder::process(const std::string &fileName)
         }
         ifs_.seekg(1 - static_cast<long long>(sizeof(stor_packet_hdr_t)), std::ios_base::cur);
     }
+    delete g;
+    g = nullptr;
+    delete a;
+    a = nullptr;
     ifs_.close();
+    std::set<uint8_t> first_set, second_set;
+
+    for (const auto& [key, value] : events_) {
+        first_set.insert(key.first);
+        second_set.insert(key.second);
+    }
+
+    channels_.g.assign(first_set.begin(), first_set.end());
+    channels_.a.assign(second_set.begin(), second_set.end());
 }
 
 const dec_ch_t &Decoder::channels() const
