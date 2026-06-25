@@ -102,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
     );
 
+
     connect(m_controller, &Controller::handleResultsReadyCheck, m_statusMessageLabel, &QLabel::setText);
     connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
     connect(m_controller, &Controller::handleResultsEnergyByAlpha, this, &MainWindow::newDataEnergyByAlpha);
