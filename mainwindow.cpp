@@ -75,9 +75,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 //    m_dialog = nullptr;
 
-    m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)));
+//    m_statusMessageLabel = new QLabel(QString("<span style='color: yellow;'>%1</span>").arg(QChar(0x003F)));
+//    m_statusMessageLabel = new QLabel(QString("<span></span>"));
+    m_statusMessageLabel = new QLabel;
+    m_statusMessageLabel->setTextFormat(Qt::RichText);
+    m_statusMessageLabel->setText("<span></span>");
     statusBar()->addWidget(m_statusMessageLabel);
-
     m_controller = new Controller(m_path);
 
 
@@ -99,10 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
     );
 
-    connect(m_controller, &Controller::handleResultsReadyCheck, [this](const QString &message){
-        m_statusMessageLabel->setText(message);
-    });
-
+    connect(m_controller, &Controller::handleResultsReadyCheck, m_statusMessageLabel, &QLabel::setText);
     connect(m_controller, &Controller::handleResultsTimeCorrectedByAlpha, this, &MainWindow::newDataTimeCorrectedByAlpha);
     connect(m_controller, &Controller::handleResultsEnergyByAlpha, this, &MainWindow::newDataEnergyByAlpha);
     connect(m_controller, &Controller::handleResultsProcessing, this, &MainWindow::newDataProcessing);
