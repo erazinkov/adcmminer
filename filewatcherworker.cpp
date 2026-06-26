@@ -16,6 +16,7 @@ void FileWatcherWorker::doWorkCheck()
         m_fileInfo->refresh();
         const auto n{m_fileInfo->lastModified()};
         isModified = p != n;
+        r.append(isModified ? QString::fromUtf8(u8"\U0001F525") : QString::fromUtf8(u8"\U000023F3"));
     } else {
         r.append(QString("<span style='color: red;'>%1</span> %2").arg(QChar(0x2718)).arg(m_fileInfo->absoluteFilePath()));
     }
