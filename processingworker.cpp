@@ -15,14 +15,14 @@ void ProcessingWorker::doWorkS(const QString &path)
 {
     QMap<QString, double> m;
     auto start = std::chrono::steady_clock::now();
-    m_decoder->process(path.toStdString());
-    if (m_decoder->events().empty() || qFuzzyCompare(m_decoder->time(), 0.0) || m_decoder->counters().empty()) {
+    m_decoder->process_o(path.toStdString());
+    if (m_decoder->events_o().empty() || qFuzzyCompare(m_decoder->time(), 0.0) || m_decoder->counters().empty()) {
         return;
     }
     auto stop = std::chrono::steady_clock::now();
     m.insert(tr("Decoding"), std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
     start = std::chrono::steady_clock::now();
-    m_calibration->setNewData(m_decoder->events(), m_decoder->channels(), m_decoder->time(), m_decoder->counters());
+    m_calibration->setNewData_o(m_decoder->events_o(), m_decoder->channels(), m_decoder->time(), m_decoder->counters());
     m_calibration->process();
     stop = std::chrono::steady_clock::now();
     m.insert(tr("Calibration"), std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());

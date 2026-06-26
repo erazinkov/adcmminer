@@ -8,6 +8,7 @@
 #include "timepeaksfinder.h"
 #include "energypeak.h"
 #include "peakfinder.h"
+#include "decoder.h"
 
 class Calibration
 {
@@ -16,6 +17,11 @@ public:
 
     void process();
     void setNewData(const std::map<std::pair<uint8_t, uint8_t>, std::vector<dec_ev_m_t>> &events,
+                    const dec_ch_t &channels,
+                    double time,
+                    const std::map<uint8_t, uint32_t> &counters);
+    void setNewData_o(const std::unordered_map<std::pair<uint8_t, uint8_t>,
+                          std::vector<dec_ev_m_t>, PairHash> &events_o,
                     const dec_ch_t &channels,
                     double time,
                     const std::map<uint8_t, uint32_t> &counters);
